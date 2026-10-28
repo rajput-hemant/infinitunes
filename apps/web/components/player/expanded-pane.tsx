@@ -105,7 +105,9 @@ export function ExpandedPane({
         aria-label={tab === "queue" ? "Up next" : "Lyrics"}
         className={cn(
           "min-h-0 flex-1 rounded-md p-2",
-          tab === "queue" ? "overflow-y-auto" : "overflow-hidden",
+          tab === "queue"
+            ? "scrollbar-hover overflow-y-auto"
+            : "overflow-hidden",
         )}
       >
         {tab === "queue" ? (

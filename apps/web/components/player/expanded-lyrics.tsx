@@ -57,7 +57,7 @@ function Lyrics({ track, position, onSeek }: Props) {
         <section
           aria-label="Lyrics"
           tabIndex={0}
-          className="h-full overflow-y-auto overscroll-contain px-2 py-8 text-xl/9 font-semibold whitespace-pre-line text-foreground [mask-image:linear-gradient(to_bottom,transparent,black_2rem,black_calc(100%-2rem),transparent)] forced-colors:[mask-image:none]"
+          className="scrollbar-hover h-full overflow-y-auto overscroll-contain px-2 py-8 text-xl/9 font-semibold whitespace-pre-line text-foreground [mask-image:linear-gradient(to_bottom,transparent,black_2rem,black_calc(100%-2rem),transparent)] forced-colors:[mask-image:none]"
         >
           {data.plain}
         </section>

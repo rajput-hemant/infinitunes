@@ -156,6 +156,42 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 }
 
 /*
+ * Inner scroll panes show the thumb only while the pointer is over them or focus
+ * is inside. The lane stays reserved and the track is always transparent. Touch
+ * and forced colours keep a visible system-style thumb.
+ */
+@utility scrollbar-hover {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--muted-foreground) transparent;
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--muted-foreground);
+    }
+  }
+
+  @media (hover: none), (forced-colors: active) {
+    scrollbar-color: auto;
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--muted-foreground);
+    }
+  }
+}
+
+/*
  * Light scheme. Surfaces and text are shared by every accent. The accent
  * variables (--light-*, --dark-*) default to a neutral, foreground-based set
  * here and are overridden inline on <html> by lib/theme/html.ts when the glass
