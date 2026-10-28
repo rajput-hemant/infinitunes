@@ -247,6 +247,7 @@ describe("saveTracks", () => {
     ).resolves.toEqual({ saved: 0, failed: 1 });
 
     expect(mockDeleted).toEqual([
+      "FA9LA.mp4",
       jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri,
     ]);
   });
@@ -328,6 +329,17 @@ describe("saveTracks", () => {
       "high",
     );
     expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(mockDeleted).toContain("FA9LA.mp4");
+  });
+
+  it("removes a partial destination when the write fails", async () => {
+    mockWriteFails = true;
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 1 });
     expect(mockDeleted).toContain("FA9LA.mp4");
   });
 
