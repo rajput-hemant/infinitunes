@@ -14,6 +14,9 @@ function seasonEpisodeTotal(show: Show, season: number): number {
   );
 }
 
+const episodeItems = (page: Episode[]) => page.map(toSongRow);
+const episodeKey = (row: SongRowItem) => row.id;
+
 type ShowEpisodesOptions = { show: Show; season: number; sort: Sort };
 
 /**
@@ -29,10 +32,10 @@ export function useShowEpisodes({ show, season, sort }: ShowEpisodesOptions) {
     queryKey: [...trpc.show.episodes.pathKey(), { id, season, sort }],
     fetchPage: (page) =>
       trpcClient.show.episodes.query({ id, season, page, sort }),
-    itemsOf: (page) => page.map(toSongRow),
+    itemsOf: episodeItems,
     hasMore: (_lastPage, pages) =>
       !Number.isFinite(total) ||
       pages.reduce((count, page) => count + page.length, 0) < total,
-    keyOf: (row) => row.id,
+    keyOf: episodeKey,
   });
 }

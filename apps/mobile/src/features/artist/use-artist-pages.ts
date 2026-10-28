@@ -1,9 +1,11 @@
 import {
+  type ArtistPage,
   categorySort,
   isDefaultCategory,
   toArtistPage,
 } from "@infinitunes/core/artist-pagination";
 import type { Category } from "@infinitunes/types";
+import { useCallback } from "react";
 
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
@@ -40,6 +42,10 @@ export function useArtistPages<Raw, Item>({
   keyOf,
   enabled,
 }: ArtistPagesOptions<Raw, Item>) {
+  const itemsOf = useCallback(
+    (page: ArtistPage<Raw>) => page.items.map(toItem),
+    [toItem],
+  );
   return useInfiniteList({
     queryKey: [
       ...trpc.artist[source].pathKey(),
@@ -61,7 +67,7 @@ export function useArtistPages<Raw, Item>({
       const { section, list } = SECTIONS[source];
       return toArtistPage<Raw>(result, section, list);
     },
-    itemsOf: (page) => page.items.map(toItem),
+    itemsOf,
     hasMore: (lastPage) => !lastPage.last_page,
     keyOf,
   });

@@ -275,7 +275,6 @@ export function ListRow({
   // a plain row keeps that much as padding, so the content keeps its place.
   const bodyClass = "min-h-row flex-1 flex-row items-center gap-3 py-1";
   const bodyStyle = { paddingStart: space.lg - (android ? space.sm : 0) };
-  const tonal = useTonalContainer(selected && !dimmed, endPad, endInset);
 
   // An item without a screen is a labelled view, never a disabled button;
   // only its picture dims (`Leading`), so the text keeps its contrast.
@@ -340,6 +339,27 @@ export function ListRow({
     );
   }
   return (
+    <TonalRow current={selected} endPad={endPad} endInset={endInset}>
+      {content}
+      {controls}
+    </TonalRow>
+  );
+}
+
+/** Only Android renders the tonal container; iOS rows allocate no animation hooks. */
+function TonalRow({
+  current,
+  endPad,
+  endInset,
+  children,
+}: {
+  current: boolean;
+  endPad: number;
+  endInset: number;
+  children: ReactNode;
+}) {
+  const tonal = useTonalContainer(current, endPad, endInset);
+  return (
     <Animated.View
       className="flex-row items-center overflow-hidden"
       style={tonal.style}
@@ -350,8 +370,7 @@ export function ListRow({
         className="bg-secondary"
         style={[StyleSheet.absoluteFill, tonal.background]}
       />
-      {content}
-      {controls}
+      {children}
     </Animated.View>
   );
 }

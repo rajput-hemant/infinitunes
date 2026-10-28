@@ -19,6 +19,9 @@ function wrapper({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
+const itemsOf = (p: Page) => p.items;
+const keyOf = (item: Item) => item.id;
+
 function listOf(
   fetchPage: (page: number) => Promise<Page>,
   options: { firstPage?: number; enabled?: boolean } = {},
@@ -28,9 +31,9 @@ function listOf(
       useInfiniteList<Page, Item>({
         queryKey: ["test-list"],
         fetchPage,
-        itemsOf: (p) => p.items,
+        itemsOf,
         hasMore: (p) => !p.last,
-        keyOf: (item) => item.id,
+        keyOf,
         ...options,
       }),
     { wrapper },
@@ -54,6 +57,25 @@ describe("useInfiniteList", () => {
       expect(ids(result.current.items)).toEqual(["a", "b", "c"]),
     );
     expect(fetchPage).toHaveBeenLastCalledWith(2);
+  });
+
+  it("keeps list data stable while the next page is pending", async () => {
+    const second = Promise.withResolvers<Page>();
+    const { result, rerender } = await listOf((n) =>
+      n === 1 ? Promise.resolve(page(["a"])) : second.promise,
+    );
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+    const first = result.current.items;
+    await rerender({});
+    expect(result.current.items).toBe(first);
+
+    await act(async () => result.current.loadMore());
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(true));
+    expect(result.current.items).toBe(first);
+
+    await act(async () => second.resolve(page(["b"], true)));
+    await waitFor(() => expect(ids(result.current.items)).toEqual(["a", "b"]));
+    expect(result.current.items).not.toBe(first);
   });
 
   it("starts at page 0 for the upstream lists that count from 0", async () => {

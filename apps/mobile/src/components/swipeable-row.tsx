@@ -152,17 +152,17 @@ function Capsule({
   count: number;
   side: SwipeSide;
   reveal: SharedValue<number>;
-  stretch: SharedValue<number>;
-  fade: SharedValue<number>;
+  stretch?: SharedValue<number>;
+  fade?: SharedValue<number>;
   onRun: (action: SwipeAction) => void;
 }) {
   const style = useAnimatedStyle(() => {
     const { edge, width, opacity } = capsuleLayout(
       reveal.value,
-      stretch.value,
+      stretch?.value ?? 0,
       index,
       count,
-      fade.value,
+      fade?.value ?? 0,
     );
     return side === "leading"
       ? { left: edge, width, opacity }
@@ -213,27 +213,61 @@ function ActionPane({
 }: {
   side: SwipeSide;
   actions: readonly SwipeAction[];
-  translation: SharedValue<number> | undefined;
+  translation: SharedValue<number>;
   rowWidth: SharedValue<number>;
   moved: SharedValue<number>;
   latch: SharedValue<CommitLatch>;
   onRun: (action: SwipeAction) => void;
   onCommitChange: (past: boolean) => void;
 }) {
-  const fallback = useSharedValue(0);
-  const dragged = translation ?? fallback;
+  const dragged = translation;
   const sign = side === "leading" ? 1 : -1;
   const reveal = useDerivedValue(() => Math.max(0, sign * dragged.value));
+  const content = { side, actions, reveal, moved, onRun };
+  return Platform.OS === "ios" ? (
+    <CommitPane
+      {...content}
+      dragged={dragged}
+      rowWidth={rowWidth}
+      latch={latch}
+      onCommitChange={onCommitChange}
+    />
+  ) : (
+    <PaneContent {...content} />
+  );
+}
+
+type PaneContentProps = {
+  side: SwipeSide;
+  actions: readonly SwipeAction[];
+  reveal: SharedValue<number>;
+  moved: SharedValue<number>;
+  stretch?: SharedValue<number>;
+  fade?: SharedValue<number>;
+  onRun: (action: SwipeAction) => void;
+};
+
+/** Only iOS stretches and commits; Android needs none of its animation state. */
+function CommitPane({
+  dragged,
+  rowWidth,
+  latch,
+  onCommitChange,
+  ...content
+}: PaneContentProps & {
+  dragged: SharedValue<number>;
+  rowWidth: SharedValue<number>;
+  latch: SharedValue<CommitLatch>;
+  onCommitChange: (past: boolean) => void;
+}) {
+  const { side } = content;
   const stretch = useSharedValue(0);
   const fade = useSharedValue(0);
   const last = useSharedValue({ x: 0, t: 0 });
   const reduced = useReducedMotion();
-  // Android keeps the revealed buttons: no commit point.
-  const commits = Platform.OS === "ios";
 
   useAnimatedReaction(
     () =>
-      commits &&
       shouldCommitSwipe({
         translation: dragged.value,
         velocity: sampleVelocity(last, dragged.value),
@@ -254,6 +288,18 @@ function ActionPane({
       }
     },
   );
+  return <PaneContent {...content} stretch={stretch} fade={fade} />;
+}
+
+function PaneContent({
+  side,
+  actions,
+  reveal,
+  moved,
+  stretch,
+  fade,
+  onRun,
+}: PaneContentProps) {
   useAnimatedReaction(
     () => reveal.value,
     (value) => {
@@ -407,7 +453,7 @@ export function SwipeableRow({
   const pane = (
     side: SwipeSide,
     set: readonly SwipeAction[],
-    translation: SharedValue<number> | undefined,
+    translation: SharedValue<number>,
   ) => (
     <ActionPane
       side={side}
