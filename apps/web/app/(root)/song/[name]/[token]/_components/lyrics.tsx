@@ -1,6 +1,7 @@
 "use client";
 
-import type { Lyrics as LyricsData } from "@infinitunes/types";
+import type { LyricLine } from "@infinitunes/core/lyrics";
+import { createPositionStore } from "@infinitunes/core/react/position-store";
 import {
   Accordion,
   AccordionContent,
@@ -9,12 +10,39 @@ import {
 } from "@infinitunes/ui/components/accordion";
 import React from "react";
 
-import { sanitizeRichText } from "~/lib/sanitize-rich-text";
+import { SyncedLyrics } from "~/components/player/synced-lyrics";
+import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
+import { playerSeek, playhead } from "~/lib/playhead";
 
-type LyricsProps = { lyrics: LyricsData };
+export type SongLyricsData = {
+  synced: LyricLine[] | null;
+  plain: string | null;
+  source: "lrclib" | "jiosaavn";
+  copyright: string | null;
+};
 
-export function Lyrics({ lyrics }: LyricsProps) {
+type LyricsProps = { id: string; lyrics: SongLyricsData };
+
+// A playhead that matches no line, for a song that is not the current track.
+const idle = createPositionStore(-1);
+const SNIPPET_LINES = 4;
+const noSeek = () => {};
+const seekPlayer = (seconds: number) => playerSeek.current?.(seconds);
+
+export function lyricsSnippet({ synced, plain }: SongLyricsData) {
+  const text = plain ?? synced?.map((line) => line.text).join("\n") ?? "";
+  return text
+    .split("\n")
+    .filter((line) => line.trim())
+    .slice(0, SNIPPET_LINES)
+    .join("\n");
+}
+
+export function Lyrics({ id, lyrics }: LyricsProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(true);
+  const [queue] = useQueue();
+  const [index] = useCurrentSongIndex();
+  const isCurrent = queue[index]?.id === id;
 
   return (
     <Accordion
@@ -31,8 +59,8 @@ export function Lyrics({ lyrics }: LyricsProps) {
 
             {isCollapsed && (
               <>
-                <p className="text-sm text-muted-foreground">
-                  {lyrics.snippet}
+                <p className="text-sm whitespace-pre-line text-muted-foreground">
+                  {lyricsSnippet(lyrics)}
                 </p>
 
                 <p className="text-sm italic">Read More...</p>
@@ -42,14 +70,25 @@ export function Lyrics({ lyrics }: LyricsProps) {
         </AccordionTrigger>
 
         <AccordionContent>
-          <p
-            className="text-sm text-muted-foreground"
-            dangerouslySetInnerHTML={{
-              __html: sanitizeRichText(
-                `${lyrics.lyrics}<br/><br/>${lyrics.lyrics_copyright}`,
-              ),
-            }}
-          />
+          {lyrics.synced ? (
+            <div className="h-80 sm:h-96">
+              <SyncedLyrics
+                key={id}
+                lines={lyrics.synced}
+                position={isCurrent ? playhead : idle}
+                onSeek={isCurrent ? seekPlayer : noSeek}
+              />
+            </div>
+          ) : (
+            <p className="text-sm whitespace-pre-line text-muted-foreground">
+              {lyrics.plain}
+            </p>
+          )}
+          {lyrics.source !== "lrclib" && lyrics.copyright ? (
+            <p className="mt-4 text-xs text-muted-foreground">
+              {lyrics.copyright}
+            </p>
+          ) : null}
         </AccordionContent>
       </AccordionItem>
     </Accordion>
