@@ -22,6 +22,7 @@ import { LikeButton } from "../like-button";
 import { ArtistLinks } from "./artist-links";
 import { TileMoreButton } from "./more-button";
 import { TilePlayPauseButton } from "./play-pause-button";
+import { RowDownload } from "./row-download";
 import {
   albumCellVisibility,
   artistCellVisibility,
@@ -168,6 +169,8 @@ export function SongListRow(props: SongListRowProps) {
       </span>
 
       <div className="flex shrink-0 items-center justify-end gap-1 text-muted-foreground">
+        <RowDownload id={item.id} name={item.name} />
+
         {/* Below md the row menu carries Add/Remove Favourite. */}
         <LikeButton
           user={user}
