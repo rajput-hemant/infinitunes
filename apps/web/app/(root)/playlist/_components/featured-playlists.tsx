@@ -25,7 +25,7 @@ function FeaturedPlaylistsContent({
 }: FeaturedPlaylistsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["featured-playlists", lang, page],
+      queryKey: ["featured-playlists", lang, page, initialPlaylists],
       queryFn: ({ pageParam }) =>
         trpc.get.featuredPlaylists.query({ page: pageParam, n: 50, lang }),
       initialPageParam: page,

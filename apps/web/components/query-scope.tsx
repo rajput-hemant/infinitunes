@@ -20,12 +20,7 @@ function getQueryClient() {
   return browserQueryClient;
 }
 
-/**
- * TanStack Query for one subtree (an infinite list, the search palette, the
- * lyrics pane). The app root does not provide it, so only the routes that
- * render one of these ship the library. The browser shares one client, so the
- * cache survives moving between scopes.
- */
+/** TanStack Query for a subtree, sharing a browser client between scopes. */
 export function QueryScope({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={getQueryClient()}>

@@ -27,7 +27,7 @@ function FeaturedStationsContent({
 }: FeaturedStationsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["featured-stations", lang, page],
+      queryKey: ["featured-stations", lang, page, initialStations],
       queryFn: ({ pageParam }) =>
         trpc.get.featuredStations.query({ page: pageParam, n: 50, lang }),
       initialPageParam: page,

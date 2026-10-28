@@ -21,7 +21,7 @@ type TopAlbumsProps = {
 function TopAlbumsContent({ initialAlbums, lang, page = 1 }: TopAlbumsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["top-albums", lang, page],
+      queryKey: ["top-albums", lang, page, initialAlbums],
       queryFn: ({ pageParam }) =>
         trpc.get.topAlbums.query({ page: pageParam, n: 50, lang }),
       initialPageParam: page,

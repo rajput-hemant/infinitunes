@@ -20,7 +20,7 @@ type TopPodcastsProps = {
 function TopPodcastsContent({ initialTopShows, page = 1 }: TopPodcastsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["top-podcasts", page],
+      queryKey: ["top-podcasts", page, initialTopShows],
       queryFn: ({ pageParam }) =>
         trpc.get.topShows.query({ page: pageParam, n: 50 }),
       initialPageParam: page,
