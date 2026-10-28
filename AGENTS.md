@@ -244,6 +244,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   JS replacements through `replaceSource` and filter status with `isCurrentSource`, since an event
   emitted before replacement can reach JS afterward. Remote commands are global queue intent and
   are never source-gated. This needs the patched native binary on both platforms.
+- Download progress is `lib/download-store.ts` (in memory; `saveTracks`/`downloadTrack` drive it, `cancelDownloads()` aborts the batch's signal). Rows show `DownloadMark` (one primitive selector per id), the header's Download is `DownloadButton` (overall ring, press cancels); one batch at a time. Marks are static (no spinning, so nothing to gate for reduce motion).
 - Frequently played songs cache in `Paths.cache/frequent-songs`, separate from explicit downloads.
   `lib/song-cache.ts` persists its index and counts with zustand + `persistedStorage`: two listens
   with at least half the song heard qualify (seeks do not count), enabled by default. The 500 MiB
