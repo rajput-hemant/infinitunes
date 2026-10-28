@@ -171,6 +171,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
               <DownloadButton
                 songs={songs}
+                name={title}
                 className={cn(
                   buttonVariants({ size: "icon", variant: "ghost" }),
                   controlStyles.headerIcon,

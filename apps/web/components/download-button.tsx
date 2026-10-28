@@ -20,6 +20,8 @@ type Downloadable = Song | Episode | SongRowItem;
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: Downloadable[];
+  /** Names the ZIP when there is more than one song. */
+  name?: string;
 };
 
 function downloadTitle(song: Downloadable): string {
@@ -60,88 +62,195 @@ function saveBlob(blob: Blob, filename: string) {
   anchor.click();
 }
 
-/** Above this many songs the user confirms first: each one is a separate file. */
-const CONFIRM_ABOVE = 10;
 const PROGRESS_TOAST = "download-progress";
+const FAILED_MESSAGE = "Download failed. Please try again.";
+
+/** A file name every filesystem accepts: no separators or reserved characters, no trailing dots. */
+function safeName(name: string): string {
+  const clean = name
+    // oxlint-disable-next-line no-control-regex
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^\.+|[. ]+$/g, "")
+    .slice(0, 120)
+    .trim();
+  return clean || "Download";
+}
+
+function downloadArtists(song: Downloadable): string {
+  const credits =
+    "more_info" in song
+      ? (song.more_info.artistMap?.primary_artists ?? [])
+      : song.primaryArtists;
+  return credits.map((artist) => decode(artist.name)).join(", ");
+}
+
+type StreamQuality = Parameters<typeof getDownloadLink>[1];
+
+/** Fetches one song's audio; throws when there is no link or it is not served. */
+async function fetchSong(song: Downloadable, quality: StreamQuality) {
+  const raw = "more_info" in song;
+  const link = getDownloadLink(
+    raw
+      ? (song.download_url ?? song.more_info.download_url ?? "")
+      : song.download_url,
+    quality,
+    raw ? maxQualityOf(song.more_info) : song.maxQuality,
+  );
+  if (!link) throw new Error("No download link");
+
+  // The CDN serves AAC in an MP4 container, hence `.m4a`.
+  return new Blob(await readAudio(link), { type: "audio/mp4" });
+}
+
+type SaveFilePicker = (options: {
+  suggestedName: string;
+  types: { description: string; accept: Record<string, string[]> }[];
+}) => Promise<{ createWritable(): Promise<FileSystemWritableFileStream> }>;
 
 /**
- * Downloads the songs one after another (each blob is released before the next
- * starts, and the browser is not asked for N save dialogs at once), reports
- * progress and any partial failure as toasts. `setBusy` brackets the run. Kept
- * outside the hook: the React Compiler bails out on try/finally.
+ * Asks where to save the archive when the browser can stream to disk (File
+ * System Access API). `undefined` means unsupported (the caller builds a blob
+ * instead); `null` means the user cancelled the picker.
+ */
+async function pickZipTarget(filename: string) {
+  const pick = (window as { showSaveFilePicker?: SaveFilePicker })
+    .showSaveFilePicker;
+  if (!pick) return undefined;
+  try {
+    return await pick.call(window, {
+      suggestedName: filename,
+      types: [
+        { description: "ZIP archive", accept: { "application/zip": [".zip"] } },
+      ],
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return null;
+    }
+    return undefined;
+  }
+}
+
+/**
+ * One file for every song: a single song is saved as is, several become one
+ * stored (uncompressed, audio is already compressed) ZIP, numbered in list
+ * order. Songs are fetched one at a time (only one is in memory) and a failed
+ * one is skipped. With the File System Access API the archive streams to disk,
+ * else it is built as a blob. Progress and partial failure are toasts;
+ * `setBusy` brackets the run. Kept outside the hook: the React Compiler bails
+ * out on try/finally.
  */
 async function downloadAll(
   songs: Downloadable[],
-  downloadSong: (song: Downloadable) => Promise<void>,
+  collection: string,
+  quality: StreamQuality,
   setBusy: (busy: boolean) => void,
 ) {
-  if (
-    songs.length > CONFIRM_ABOVE &&
-    !window.confirm(`Download ${songs.length} songs one by one?`)
-  ) {
+  const [only] = songs;
+  if (songs.length === 1 && only) {
+    setBusy(true);
+    try {
+      const title = downloadTitle(only);
+      const artists = downloadArtists(only);
+      const blob = await fetchSong(only, quality);
+      saveBlob(
+        blob,
+        `${safeName(artists ? `${artists} - ${title}` : title)}.m4a`,
+      );
+      toast.success(`Downloaded ${title}`);
+    } catch (error) {
+      console.error(error);
+      toast.error(FAILED_MESSAGE);
+    } finally {
+      setBusy(false);
+    }
     return;
   }
+
+  const archive = `${safeName(collection)}.zip`;
+  // Must run before any await: the picker needs the click's user activation.
+  const target = await pickZipTarget(archive);
+  if (target === null) return;
 
   setBusy(true);
   let failed = 0;
   try {
-    for (const [index, song] of songs.entries()) {
-      if (songs.length > 1) {
+    const { makeZip } = await import("client-zip");
+    const width = Math.max(2, String(songs.length).length);
+
+    async function* entries() {
+      for (const [index, song] of songs.entries()) {
         toast.loading(`Downloading ${index + 1} of ${songs.length}`, {
           id: PROGRESS_TOAST,
         });
-      }
-      try {
-        await downloadSong(song);
-      } catch (error) {
-        console.error(error);
-        failed++;
+        try {
+          const input = await fetchSong(song, quality);
+          const number = String(index + 1).padStart(width, "0");
+          yield {
+            name: `${number} - ${safeName(downloadTitle(song))}.m4a`,
+            input,
+          };
+        } catch (error) {
+          console.error(error);
+          failed++;
+        }
       }
     }
+
+    const zip = makeZip(entries());
+    const succeeded = () => songs.length - failed;
+
+    if (target) {
+      const writable = await target.createWritable();
+      const reader = zip.getReader();
+      try {
+        for (;;) {
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          await writable.write(chunk.value as Uint8Array<ArrayBuffer>);
+        }
+      } catch (error) {
+        await writable.abort();
+        throw error;
+      }
+      // Nothing to keep: drop the swap file instead of leaving an empty archive.
+      if (succeeded() === 0) await writable.abort();
+      else await writable.close();
+    } else {
+      const blob = await new Response(zip).blob();
+      if (succeeded() > 0) saveBlob(blob, archive);
+    }
+  } catch (error) {
+    console.error(error);
+    failed = songs.length;
   } finally {
     setBusy(false);
   }
 
-  if (songs.length === 1) {
-    if (failed) toast.error("Download failed. Please try again.");
-  } else if (failed === songs.length) {
-    toast.error("Download failed. Please try again.", { id: PROGRESS_TOAST });
+  if (failed === songs.length) {
+    toast.error(FAILED_MESSAGE, { id: PROGRESS_TOAST });
   } else if (failed) {
     toast.error(
       `Downloaded ${songs.length - failed} of ${songs.length} songs, ${failed} failed`,
       { id: PROGRESS_TOAST },
     );
-  } else if (songs.length > 1) {
+  } else {
     toast.success(`Downloaded ${songs.length} songs`, { id: PROGRESS_TOAST });
   }
 }
 
-/** Downloads every song at the chosen quality; `isDownloading` disables the trigger meanwhile. */
-export function useDownloadSongs(songs: Downloadable[]) {
+/**
+ * Downloads the songs at the chosen quality (one file, or one ZIP named
+ * `collection` for several); `isDownloading` disables the trigger meanwhile.
+ */
+export function useDownloadSongs(songs: Downloadable[], collection = "Songs") {
   const [downloadQuality] = useDownloadQuality();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
-  async function downloadSong(song: Downloadable) {
-    const raw = "more_info" in song;
-    const link = getDownloadLink(
-      raw
-        ? (song.download_url ?? song.more_info.download_url ?? "")
-        : song.download_url,
-      downloadQuality,
-      raw ? maxQualityOf(song.more_info) : song.maxQuality,
-    );
-    if (!link) return;
-
-    const title = downloadTitle(song);
-    const chunks = await readAudio(link);
-
-    // A batch reports once at the end; a single song says its name.
-    if (songs.length === 1) toast.success(`Downloaded ${title}`);
-    saveBlob(new Blob(chunks, { type: "audio/mp4" }), `${title}.m4a`);
-  }
-
   async function download() {
-    await downloadAll(songs, downloadSong, setIsDownloading);
+    await downloadAll(songs, collection, downloadQuality, setIsDownloading);
   }
 
   return { isDownloading, download };
@@ -149,10 +258,11 @@ export function useDownloadSongs(songs: Downloadable[]) {
 
 export function DownloadButton({
   songs,
+  name,
   className,
   ...rest
 }: DownloadButtonProps) {
-  const { isDownloading, download } = useDownloadSongs(songs);
+  const { isDownloading, download } = useDownloadSongs(songs, name);
 
   // "Download 0 songs" is a dead control.
   if (songs.length === 0) return null;
