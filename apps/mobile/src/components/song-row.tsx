@@ -6,6 +6,7 @@ import { togglePlayback } from "~/playback/transport";
 import { useCurrentTrackState } from "~/playback/use-current-track";
 import { useFavoriteToggle } from "~/user-data/favorites";
 
+import { DownloadMark } from "./download-ring";
 import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
 import { SongContextLink, SongMenuButton, type TrackItem } from "./song-menu";
@@ -96,6 +97,7 @@ export function SongRow({
       }
       trailing={
         <>
+          <DownloadMark id={song.id} />
           {/* A numbered list shares one cover, so its rows have room for the length. */}
           {length ? (
             <Text variant="footnote" tone="muted" numeric>

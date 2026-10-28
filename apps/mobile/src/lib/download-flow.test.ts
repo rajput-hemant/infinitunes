@@ -4,6 +4,7 @@ import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
 
 import { downloadTrack, pickDownloadFolder, saveTracks } from "./download";
+import { cancelDownloads, downloadStore } from "./download-store";
 import { ensureNotificationPermission } from "./notifications";
 
 type MockWritten = { name: string; mime: string | null };
@@ -242,6 +243,58 @@ describe("saveTracks", () => {
     expect(mockDeleted).toEqual([
       jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri,
     ]);
+  });
+
+  it("marks each song while it downloads and reports its progress", async () => {
+    const seen: unknown[] = [];
+    jest
+      .mocked(File.downloadFileAsync)
+      .mockImplementationOnce(async (_url, destination, options) => {
+        options?.onProgress?.({ bytesWritten: 50, totalBytes: 100 });
+        seen.push({ ...downloadStore.getState() });
+        return destination as never;
+      });
+
+    await saveTracks(
+      new Directory(),
+      [track({ id: "a" }), track({ id: "b" })],
+      "high",
+    );
+
+    expect(seen).toEqual([
+      expect.objectContaining({
+        queued: { b: true },
+        active: { a: 0.5 },
+        batch: expect.objectContaining({ current: "a", total: 2 }),
+      }),
+    ]);
+    expect(downloadStore.getState().batch).toBeNull();
+    expect(downloadStore.getState().active).toEqual({});
+  });
+
+  it("cancel aborts the song in flight and never starts the rest", async () => {
+    jest.mocked(File.downloadFileAsync).mockImplementationOnce(
+      (_url, _destination, options) =>
+        new Promise((_resolve, reject) => {
+          options?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          );
+          cancelDownloads();
+        }),
+    );
+
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" }), track({ id: "b" }), track({ id: "c" })],
+      "high",
+    );
+
+    // Neither the aborted song nor the others count as failed, and the
+    // aborted one is not retried at a lower bitrate.
+    expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(File.downloadFileAsync).toHaveBeenCalledTimes(1);
+    expect(mockCreated).toEqual([]);
+    expect(downloadStore.getState().batch).toBeNull();
   });
 
   it("saves an empty list as nothing saved", async () => {
