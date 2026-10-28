@@ -253,7 +253,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `infinitunes://action/clear-cache` clears it and lands on Home. It is one
   of the four launcher shortcuts on both platforms; Library remains Android Assistant-only.
 - Player wash (D3, Now Playing and the Android dock): seed from `react-native-image-colors`, palette and AA check in
-  `lib/artwork-colors.ts`; no seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText`.
+  `lib/artwork-colors.ts`; `lib/use-player-colors.ts` reads the colours. No seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText` from `components/wash.tsx`.
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
   Playing; no custom code or icon), activated once (`setActiveForLockScreen`, which rebuilds the Android session) and then
   fed by `updateLockScreenMetadata`. Local notifications (`expo-notifications`, no push, `enableRemoteNotifications: false`)
@@ -274,8 +274,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `menu` item (a real `UIMenu`) in `unstable_headerRightItems` on iOS 26 (one glass capsule), and Share + a `more_vert`
   `NativeMenu` in `headerRight` elsewhere. The action row is Apple Music's: centred Shuffle, Play, Download (download all songs,
   works signed out): Play is the solid capsule hugging icon and label (`Button roomy`), the two circles are equal on a
-  `translucentFill` that shows the wash through. The header sits on a wash of the artwork colour (`usePlayerColors` + `OnWash`, from
-  `features/player`, fading to the page background; no seed or a contrast miss is no wash) and the art is 248pt.
+  `translucentFill` that shows the wash through. The header sits on a wash of the artwork colour (`usePlayerColors` from `lib/use-player-colors.ts` + `OnWash` from
+  `components/wash.tsx`, fading to the page background; no seed or a contrast miss is no wash) and the art is 248pt.
   Compact UI: a symbol alone replaces icon-plus-text wherever it is unambiguous (`IconButton` `variant`
   `filled`/`tonal`, `large` for a screen's Play; keep the label); text stays on submits and empty-state actions.
   Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `shuffle`/`like`/`subtitle`/`meta` match the

@@ -4,6 +4,10 @@ import { act, screen, waitFor } from "@testing-library/react-native";
 import { Image } from "expo-image";
 import { getColors } from "react-native-image-colors";
 
+// The Android file by name: Jest resolves the bare path to the `.ios` one.
+import { FloatingPlayerDock as AndroidDock } from "~/features/player/floating-player-dock.tsx";
+import { FullPlayer } from "~/features/player/full-player";
+import { MiniPlayer } from "~/features/player/mini-player";
 import {
   loadMaterialColors,
   NO_SWATCH,
@@ -12,11 +16,7 @@ import {
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 
-import { findsNoSwatch } from "../../../__mocks__/react-native-image-colors";
-// The Android file by name: Jest resolves the bare path to the `.ios` one.
-import { FloatingPlayerDock as AndroidDock } from "./floating-player-dock.tsx";
-import { FullPlayer } from "./full-player";
-import { MiniPlayer } from "./mini-player";
+import { findsNoSwatch } from "../../__mocks__/react-native-image-colors";
 import { EXTRACTION_TIMEOUT_MS } from "./use-player-colors";
 
 const SEED = "#5B0F12";

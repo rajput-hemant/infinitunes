@@ -13,6 +13,7 @@ import Animated, {
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
+import { useWashColors } from "~/components/wash";
 import { selection } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { usePlaybackStatus } from "~/playback/playback-status";
@@ -24,7 +25,6 @@ import type { IconSize } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 
 import { playerHaptics } from "./haptics";
-import { useWashColors } from "./wash";
 
 /** Now Playing's play/pause shape (spec 2.10): a 72pt circle around a 32pt glyph. */
 const PROMINENT_EDGE = 72;
