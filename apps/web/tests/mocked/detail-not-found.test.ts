@@ -53,7 +53,6 @@ describe("show detail page", () => {
     await expectNotFound(
       showMetadata({
         params: Promise.resolve({ name: "x", season: "1", token: "zzzz" }),
-        searchParams: Promise.resolve({}),
       }),
     );
   });

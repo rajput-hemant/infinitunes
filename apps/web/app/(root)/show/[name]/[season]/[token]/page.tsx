@@ -1,39 +1,30 @@
-import type { Sort } from "@infinitunes/types";
 import { getImageSrc, toSongRow, uniqueBy } from "@infinitunes/types";
-import { Button } from "@infinitunes/ui/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
-import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { cache, Suspense } from "react";
+import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { KeyedByParams } from "~/components/search-params-boundary";
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
-import { controlStyles } from "~/lib/control-styles";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
-import { readSort } from "~/lib/sort";
+import { DEFAULT_SORT, readSort } from "~/lib/sort";
 import { api } from "~/lib/trpc/server";
-import { asRoute, cn } from "~/lib/utils";
 import { getViewer } from "~/lib/viewer";
 
 import { EpisodeList } from "./_components/episode-list";
+import { EpisodeSortMenu } from "./_components/episode-sort-menu";
 import { EpisodesSkeleton } from "./_components/episodes-skeleton";
 
-// callers must pass a normalized sort so generateMetadata and the page share one cache entry
-const getShow = cache(async (token: string, season: string, sort: Sort) =>
+// The shell never depends on `?sort=`: the header, about text and seasons are fetched once at
+// the default order, so a sort switch leaves them mounted and only the episode section reloads.
+const getShow = cache(async (token: string, season: string) =>
   orNotFound(
     api.show.details({
       token,
       season,
-      sort,
+      sort: DEFAULT_SORT,
     }),
   ),
 );
@@ -45,12 +36,10 @@ type ShowDetailsPageProps = {
 
 export async function generateMetadata({
   params,
-  searchParams,
-}: ShowDetailsPageProps): Promise<Metadata> {
+}: Pick<ShowDetailsPageProps, "params">): Promise<Metadata> {
   const { name, season, token } = await params;
-  const sort = readSort((await searchParams).sort);
 
-  const { show_details: show } = await getShow(token, season, sort);
+  const { show_details: show } = await getShow(token, season);
 
   return pageMetadata({
     title: show.title,
@@ -61,13 +50,29 @@ export async function generateMetadata({
   });
 }
 
-type ShowEpisodeSectionProps = {
-  show: Awaited<ReturnType<typeof getShow>>;
-  sort: Sort;
-};
+type ShowEpisodeSectionProps = Pick<
+  ShowDetailsPageProps,
+  "params" | "searchParams"
+>;
 
-async function ShowEpisodeSection({ show, sort }: ShowEpisodeSectionProps) {
-  const { user, favorites, playlists } = await getViewer();
+/** The one sort-dependent part of the page: `KeyedByParams` swaps it for its skeleton on every `?sort=` change. */
+async function ShowEpisodeSection({
+  params,
+  searchParams,
+}: ShowEpisodeSectionProps) {
+  const sort = readSort((await searchParams).sort);
+  const { season, token } = await params;
+  const show = await getShow(token, season);
+  const seasonNumber = Number(show.show_details.more_info.season_number);
+  const [episodes, { user, favorites, playlists }] = await Promise.all([
+    api.show.episodes({
+      id: show.show_details.id,
+      season: seasonNumber,
+      page: 1,
+      sort,
+    }),
+    getViewer(),
+  ]);
 
   return (
     <>
@@ -76,38 +81,17 @@ async function ShowEpisodeSection({ show, sort }: ShowEpisodeSectionProps) {
           {show.modules.episodes.title}
         </h2>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="outline"
-                className={cn(controlStyles.text, "w-28 md:w-36")}
-              >
-                {sort === "asc" ? "Oldest" : "Newest"}
-                <ChevronDown className="ml-auto size-5" />
-              </Button>
-            }
-          />
-
-          <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
-            <DropdownMenuItem
-              render={<Link href={asRoute("?sort=desc")}>Newest</Link>}
-            />
-            <DropdownMenuItem
-              render={<Link href={asRoute("?sort=asc")}>Oldest</Link>}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <EpisodeSortMenu sort={sort} />
       </div>
 
       <EpisodeList
-        key={show.episodes[0]?.id}
+        key={`${sort}-${episodes[0]?.id}`}
         user={user}
         showId={show.show_details.id}
-        season={Number(show.show_details.more_info.season_number)}
+        season={seasonNumber}
         sort={sort}
         totalEpisodes={Number(show.show_details.more_info.total_episodes)}
-        initialEpisodes={show.episodes.map(toSongRow)}
+        initialEpisodes={episodes.map(toSongRow)}
         userFavorites={favorites}
         userPlaylists={playlists}
       />
@@ -116,10 +100,9 @@ async function ShowEpisodeSection({ show, sort }: ShowEpisodeSectionProps) {
 }
 
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
-  const sort = readSort((await props.searchParams).sort);
   const { season, token } = await props.params;
 
-  const show = await getShow(token, season, sort);
+  const show = await getShow(token, season);
   const { modules, seasons, show_details } = show;
 
   return (
@@ -161,9 +144,12 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         ))}
       </Shelf>
 
-      <Suspense fallback={<EpisodesSkeleton />}>
-        <ShowEpisodeSection show={show} sort={sort} />
-      </Suspense>
+      <KeyedByParams params={["sort"]} fallback={<EpisodesSkeleton />}>
+        <ShowEpisodeSection
+          params={props.params}
+          searchParams={props.searchParams}
+        />
+      </KeyedByParams>
     </div>
   );
 }
