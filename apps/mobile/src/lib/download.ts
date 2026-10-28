@@ -239,6 +239,10 @@ export async function saveTracks(
         if (signal.aborted) break;
         const target = folder.createFile(name, MIME_TYPE);
         await target.write(bytes);
+        if (signal.aborted) {
+          target.delete();
+          break;
+        }
         result.saved += 1;
         finishSong(track.id, "saved", signal);
       } catch {

@@ -11,6 +11,8 @@ type MockWritten = { name: string; mime: string | null };
 const mockCreated: MockWritten[] = [];
 const mockDeleted: string[] = [];
 let mockWriteFails = false;
+let mockCancelDuringWrite = false;
+let mockCancel = () => {};
 let mockExisting: string[] = [];
 
 jest.mock("expo-file-system", () => {
@@ -35,7 +37,9 @@ jest.mock("expo-file-system", () => {
       return {
         write: async () => {
           if (mockWriteFails) throw new Error("disk full");
+          if (mockCancelDuringWrite) mockCancel();
         },
+        delete: () => void mockDeleted.push(name),
       };
     }
   }
@@ -65,6 +69,8 @@ beforeEach(() => {
   mockCreated.length = 0;
   mockDeleted.length = 0;
   mockWriteFails = false;
+  mockCancelDuringWrite = false;
+  mockCancel = cancelDownloads;
   mockExisting = [];
   jest.clearAllMocks();
 });
@@ -312,6 +318,17 @@ describe("saveTracks", () => {
     expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
     expect(mockCreated).toEqual([]);
     expect(mockDeleted).toHaveLength(1);
+  });
+
+  it("removes the destination if cancelled during the write", async () => {
+    mockCancelDuringWrite = true;
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(mockDeleted).toContain("FA9LA.mp4");
   });
 
   it("saves an empty list as nothing saved", async () => {
