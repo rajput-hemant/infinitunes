@@ -1,6 +1,6 @@
 import type { SongRowItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Platform, View } from "react-native";
 import {
@@ -89,7 +89,10 @@ export function SongCollection({
   });
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SongSort>("recent");
-  const shown = orderSongs(songs, query, sort);
+  const shown = useMemo(
+    () => orderSongs(songs, query, sort),
+    [songs, query, sort],
+  );
   const reorderable =
     onMove !== undefined && sort === "recent" && !query.trim();
 

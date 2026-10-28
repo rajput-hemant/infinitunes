@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { fireEvent, screen } from "@testing-library/react-native";
+import { useState } from "react";
 import { Platform, Text, View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
@@ -9,6 +10,7 @@ import { songNamed } from "~/test/user-library";
 import { colors } from "~/theme/tokens";
 
 import { SongCollection } from "./song-collection";
+import * as songOrder from "./song-order";
 
 const mockSetOptions = jest.fn();
 jest.mock("expo-router", () => ({
@@ -137,4 +139,35 @@ describe("SongCollection app bar", () => {
     const list = screen.getByTestId("reorderable-list");
     expect(list.props.onScroll).toEqual(expect.any(Function));
   });
+});
+
+function ParentRerenderScreen() {
+  const [missing, setMissing] = useState(0);
+  const [shown, setShown] = useState(songs);
+  return (
+    <>
+      <Text onPress={() => setMissing(1)}>Report missing</Text>
+      <Text onPress={() => setShown(songs.slice(1))}>Remove first</Text>
+      <SongCollection
+        songs={shown}
+        missing={missing}
+        onRefresh={async () => {}}
+        recentLabel="Recently played"
+        renderRow={(song) => <Text>{song.name}</Text>}
+      />
+    </>
+  );
+}
+
+it("retains filtered and sorted songs on an unrelated parent render", async () => {
+  jest.replaceProperty(Platform, "OS", "android");
+  const order = jest.spyOn(songOrder, "orderSongs");
+  await renderStack({ index: ParentRerenderScreen });
+  order.mockClear();
+  await fireEvent.press(screen.getByText("Report missing"));
+  expect(order).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByText("Remove first"));
+  expect(order).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText("Opening Number")).toBeNull();
+  order.mockRestore();
 });
