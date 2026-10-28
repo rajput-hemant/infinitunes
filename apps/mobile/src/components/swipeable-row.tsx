@@ -471,7 +471,8 @@ export function SwipeableRow({
     // Released past the commit point: run the primary instead of resting open.
     if (!fullSwipe || !releaseCommits(latch.get(), Date.now())) return;
     latch.set({ past: false, end: 0 });
-    const primary = (direction === "left" ? leading : trailing)?.[0];
+    // RNGH reports the row's movement: rightward opens the leading actions.
+    const primary = (direction === "right" ? leading : trailing)?.[0];
     if (primary) run(primary);
   };
 
