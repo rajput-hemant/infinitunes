@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
+import { rawPlaylist } from "@infinitunes/types/fixtures";
+
 import {
+  canShuffle,
   getId,
   getKind,
   getSongs,
@@ -8,6 +11,7 @@ import {
   getVerified,
   isKind,
   isShowDetails,
+  playlistMetaParts,
 } from "../components/details-header/details-header-items";
 import { isTitleUnderToolbar } from "../components/details-header/use-toolbar-art";
 import {
@@ -66,6 +70,44 @@ describe("details header items", () => {
   it("reports verification only for items that carry it", () => {
     expect(getVerified(artistFixture())).toBe(true);
     expect(getVerified(albumFixture())).toBe(false);
+  });
+
+  it("offers shuffle for every page except a single song", () => {
+    expect(canShuffle(songFixture())).toBe(false);
+    expect(canShuffle(albumFixture())).toBe(true);
+    expect(canShuffle(artistFixture())).toBe(true);
+    expect(canShuffle(rawPlaylist())).toBe(true);
+  });
+
+  it("shows a playlist's fan count once, in its compact form", () => {
+    const playlist = rawPlaylist({
+      subtitle: "159.5K Fans",
+      more_info: {
+        ...rawPlaylist().more_info,
+        subtitle_desc: ["3h 28m", "50 Songs", "159,534 Fans"],
+      },
+    });
+    expect(playlistMetaParts(playlist)).toEqual([
+      "159.5K Fans",
+      "50 Songs",
+      "3h 28m",
+    ]);
+  });
+
+  it("keeps the one fan count when the subtitle has none", () => {
+    const playlist = rawPlaylist({
+      subtitle: "Editors Picks",
+      more_info: {
+        ...rawPlaylist().more_info,
+        subtitle_desc: ["3h 28m", "50 Songs", "159,534 Fans"],
+      },
+    });
+    expect(playlistMetaParts(playlist)).toEqual([
+      "Editors Picks",
+      "159,534 Fans",
+      "50 Songs",
+      "3h 28m",
+    ]);
   });
 });
 

@@ -20,6 +20,7 @@ import { detailBandClassName } from "./details-header-band";
 import { DetailsHeaderFrame } from "./details-header-frame";
 import type { DetailsItem, DetailsKind } from "./details-header-items";
 import {
+  canShuffle,
   getExplicit,
   getId,
   getKind,
@@ -132,20 +133,22 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               Play
             </PlayButton>
 
-            <PlayButton
-              shuffle
-              type={playType}
-              season={playSeason}
-              token={playToken}
-              className={cn(
-                buttonVariants({ variant: "secondary" }),
-                controlStyles.hero,
-                "text-sm font-semibold",
-              )}
-            >
-              <Shuffle aria-hidden="true" className="size-4" />
-              Shuffle
-            </PlayButton>
+            {canShuffle(item) && (
+              <PlayButton
+                shuffle
+                type={playType}
+                season={playSeason}
+                token={playToken}
+                className={cn(
+                  buttonVariants({ variant: "secondary" }),
+                  controlStyles.hero,
+                  "text-sm font-semibold",
+                )}
+              >
+                <Shuffle aria-hidden="true" className="size-4" />
+                Shuffle
+              </PlayButton>
+            )}
 
             {/* The icon actions share one glass capsule over the artwork band; the buttons inside get fills, not their own glass. */}
             <GlassSurface

@@ -62,6 +62,31 @@ export function getSubtitle(item: DetailsItem): string {
   return decode("subtitle" in item ? item.subtitle : "");
 }
 
+/** A single song has nothing to shuffle; every other page lists tracks. */
+export function canShuffle(item: DetailsItem): boolean {
+  return !isKind(item, "song");
+}
+
+/**
+ * A playlist's meta parts: the subtitle, then `subtitle_desc` reversed. Upstream
+ * repeats the fan count (compact "159.5K Fans" and exact "159,534 Fans"), so only
+ * the first one, the subtitle's compact form, is kept.
+ */
+export function playlistMetaParts(playlist: Playlist): string[] {
+  const parts = [
+    decode(playlist.subtitle),
+    ...playlist.more_info.subtitle_desc.slice().reverse().map(decode),
+  ].filter(Boolean);
+
+  let hasFans = false;
+  return parts.filter((part) => {
+    if (!/\bFans$/.test(part)) return true;
+    if (hasFans) return false;
+    hasFans = true;
+    return true;
+  });
+}
+
 export function getVerified(item: DetailsItem): boolean {
   return "isVerified" in item ? item.isVerified : false;
 }
