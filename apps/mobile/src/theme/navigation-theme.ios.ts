@@ -1,5 +1,6 @@
 import { Color, DarkTheme, DefaultTheme } from "expo-router";
 import type { Theme } from "expo-router";
+import { useMemo } from "react";
 import { useColorScheme } from "react-native";
 
 import { useAccent } from "./appearance";
@@ -12,17 +13,20 @@ import { accentColors } from "./tokens";
  */
 export function useNavigationTheme(): Theme {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
-  const accent = accentColors(useAccent(), scheme);
+  const accent = useAccent();
   const base = scheme === "dark" ? DarkTheme : DefaultTheme;
-  return {
-    ...base,
-    colors: {
-      primary: accent?.primary ?? Color.ios.label,
-      background: Color.ios.systemBackground,
-      card: Color.ios.secondarySystemBackground,
-      text: Color.ios.label,
-      border: Color.ios.separator,
-      notification: Color.ios.systemRed,
-    },
-  };
+  return useMemo(() => {
+    const preset = accentColors(accent, scheme);
+    return {
+      ...base,
+      colors: {
+        primary: preset?.primary ?? Color.ios.label,
+        background: Color.ios.systemBackground,
+        card: Color.ios.secondarySystemBackground,
+        text: Color.ios.label,
+        border: Color.ios.separator,
+        notification: Color.ios.systemRed,
+      },
+    };
+  }, [base, accent, scheme]);
 }

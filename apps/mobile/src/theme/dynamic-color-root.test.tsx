@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react-native";
+import { vars } from "nativewind";
 import { AppState, Text } from "react-native";
 import type { AppStateStatus } from "react-native";
 
@@ -7,7 +8,7 @@ import { DynamicColorRoot } from "./dynamic-color-root.android";
 import { colors } from "./tokens";
 
 jest.mock("nativewind", () => ({
-  vars: (variables: Record<string, string>) => ({ variables }),
+  vars: jest.fn((variables: Record<string, string>) => ({ variables })),
 }));
 jest.mock("./android-colors.android", () => ({
   hasDynamicColor: true,
@@ -55,4 +56,20 @@ describe("DynamicColorRoot (Android)", () => {
     await act(() => listeners[0]?.("active"));
     expect(refreshDynamicPalettes).toHaveBeenCalledTimes(1);
   });
+});
+
+it("retains root variables when only its parent renders", async () => {
+  const result = await render(
+    <DynamicColorRoot>
+      <Text>Before</Text>
+    </DynamicColorRoot>,
+  );
+  const before = jest.mocked(vars).mock.calls.length;
+  await result.rerender(
+    <DynamicColorRoot>
+      <Text>After</Text>
+    </DynamicColorRoot>,
+  );
+  expect(vars).toHaveBeenCalledTimes(before);
+  expect(screen.getByText("After")).toBeOnTheScreen();
 });

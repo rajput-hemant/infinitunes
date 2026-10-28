@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Platform,
   PlatformColor as platformColor,
@@ -19,7 +20,12 @@ import type { ColorToken, Palette } from "./tokens";
  */
 export function usePalette(): Palette {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
-  return withAccent(paletteFor(scheme), useAccent(), scheme);
+  const base = paletteFor(scheme);
+  const accent = useAccent();
+  return useMemo(
+    () => withAccent(base, accent, scheme),
+    [base, accent, scheme],
+  );
 }
 
 /**

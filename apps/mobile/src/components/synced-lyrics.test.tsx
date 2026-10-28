@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import { Profiler } from "react";
 
 import { audioPlayer } from "~/playback/audio-engine";
 import { playbackPosition } from "~/playback/playback-status";
@@ -68,4 +69,31 @@ it("does not seek a different playing song from the song page", async () => {
   );
   expect(screen.queryByRole("button", { name: "Seek to First" })).toBeNull();
   expect(screen.getByText("First")).toBeOnTheScreen();
+});
+
+it("commits lyrics only when the active line changes", async () => {
+  playerStore.getState().playTracks([toSongRow(rawSong())]);
+  const onRender = jest.fn();
+  await renderWithProviders(
+    <Profiler id="lyrics" onRender={onRender}>
+      <SyncedLyrics lines={lines} songId="BSaNI3Yr" height={200} />
+    </Profiler>,
+  );
+  await act(() => playbackPosition.set(2));
+  const before = onRender.mock.calls.length;
+  for (const position of [2.25, 2.5, 3, 4.75]) {
+    await act(() => playbackPosition.set(position));
+  }
+  expect(onRender).toHaveBeenCalledTimes(before);
+  await act(() => playbackPosition.set(5));
+  expect(onRender).toHaveBeenCalledTimes(before + 1);
+  expect(screen.getByRole("button", { name: "Seek to Second" })).toHaveProp(
+    "accessibilityState",
+    { selected: true },
+  );
+  await act(() => playbackPosition.set(1));
+  expect(screen.getByRole("button", { name: "Seek to First" })).toHaveProp(
+    "accessibilityState",
+    { selected: true },
+  );
 });

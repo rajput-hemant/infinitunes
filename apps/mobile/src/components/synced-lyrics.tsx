@@ -1,12 +1,18 @@
 import { activeLineIndex } from "@infinitunes/core/lyrics";
 import type { LyricLine } from "@infinitunes/core/lyrics";
-import { memo, useCallback, useEffect, useRef } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import type { ScrollViewInstance } from "react-native";
 import { Pressable, ScrollView, View } from "react-native";
 import Animated, { useReducedMotion } from "react-native-reanimated";
 
 import { Text } from "~/components/ui/text";
-import { usePlaybackPosition } from "~/playback/playback-status";
+import { playbackPosition } from "~/playback/playback-status";
 import { usePlayer } from "~/playback/player-store";
 import { seekTo } from "~/playback/transport";
 import { space } from "~/theme/tokens";
@@ -37,14 +43,16 @@ const LINE_FADE = {
 } as const;
 
 export function SyncedLyrics(props: Props) {
-  const position = usePlaybackPosition();
   const playingId = usePlayer((state) => state.queue[state.currentIndex]?.id);
+  const active = useSyncExternalStore(playbackPosition.subscribe, () =>
+    playingId === props.songId
+      ? activeLineIndex(props.lines, playbackPosition.get())
+      : -1,
+  );
   return (
     <TimedLines
       {...props}
-      active={
-        playingId === props.songId ? activeLineIndex(props.lines, position) : -1
-      }
+      active={active}
       canSeek={playingId === props.songId}
     />
   );
