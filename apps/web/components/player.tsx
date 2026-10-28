@@ -22,7 +22,9 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
+import { useAudioElementSync } from "~/hooks/use-audio-element-sync";
 import { useKeydown } from "~/hooks/use-keydown";
+import { useMediaSession } from "~/hooks/use-media-session";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -82,7 +84,10 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   // third party hooks
   const {
     load,
+    player,
     isPlaying,
+    play,
+    pause,
     togglePlayPause,
     getPosition,
     isLoading,
@@ -273,6 +278,16 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     }
   }
 
+  // Explicit play/pause for the OS: a media key means one or the other, never
+  // a toggle against a state the OS may have already changed.
+  function playHandler() {
+    if (isPlayerInit) {
+      play();
+    } else {
+      setIsPlayerInit(true);
+    }
+  }
+
   React.useEffect(() => {
     playerSeek.current = (seconds) => {
       seek(seconds);
@@ -282,6 +297,29 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
       playerSeek.current = undefined;
     };
   }, [seek]);
+
+  useAudioElementSync(player);
+  useMediaSession({
+    track: current,
+    howl: player,
+    isPlaying,
+    duration,
+    getPosition,
+    actions: {
+      play: playHandler,
+      pause,
+      previous: skipToPrev,
+      next: skipToNext,
+      seekTo: (seconds) =>
+        playerSeek.current?.(
+          Math.min(Math.max(seconds, 0), duration || seconds),
+        ),
+      stop: () => {
+        pause();
+        playerSeek.current?.(0);
+      },
+    },
+  });
 
   function seekChange(value: number) {
     position.set(value);
