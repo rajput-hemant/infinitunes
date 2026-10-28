@@ -97,6 +97,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     `/me/*` pages) are whole-page data: they keep a route `loading.tsx`
     with a skeleton that mirrors the page, and Suspense only for secondary lists.
     Artist and label tab frames (above) use a layout with Suspense instead.
+  - Query-backed lists share the browser client through `QueryScope`; seeded infinite lists
+    reset only when their server first-page content changes (`components/query-scope.tsx`).
+    Keep sort-dependent show episodes inside `KeyedByParams` and signal the pending sort
+    from the menu with `pendingOnClick`, so the old list is replaced by its skeleton at once.
+    Song rows all rise in; the entrance stagger is capped at 10 (`song-list/song-list-row.tsx`).
     Catalog list pages put the heading in the shell and the fetched grid in
     `Suspense`; they have no `loading.tsx`.
   - Do not use `<Link prefetch>` (true) or `partialPrefetching`: on 16.3.6 with the
@@ -143,6 +148,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - `createDownloadLinks` decrypts with `crypto-js`, not `node:crypto`: Node's OpenSSL 3
   has no `des-ecb` (`next dev`/`start` run under Node even via `bun run`), so no
   `--openssl-legacy-provider` is needed. Don't switch it back.
+- Web downloads save one `Artist - Title.m4a` per song (never a ZIP). `download-store.ts`
+  owns queued/active progress and batch cancellation; row rings and the header ring read it,
+  and the header ring cancels the batch. Progress writes are coalesced per animation frame;
+  `download-button.tsx` owns filename sanitising.
+- Header actions use `canShuffle` so songs and episodes have no Shuffle; playlist fans are
+  deduplicated in `details-header-items.ts` (`playlistMetaParts`).
 - `apps/web/app/api/og/route.tsx` runs on the default Node runtime (Edge is
   deprecated in Next 16). Its font must be loaded with `readFile` from
   `node:fs/promises`, not `fetch()` - undici rejects the `file:` URL that
@@ -244,7 +255,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   JS replacements through `replaceSource` and filter status with `isCurrentSource`, since an event
   emitted before replacement can reach JS afterward. Remote commands are global queue intent and
   are never source-gated. This needs the patched native binary on both platforms.
-- Download progress is `lib/download-store.ts` (in memory; `saveTracks`/`downloadTrack` drive it, `cancelDownloads()` aborts the batch's signal). Rows show `DownloadMark` (one primitive selector per id), the header's Download is `DownloadButton` (overall ring, press cancels); one batch at a time. Marks are static (no spinning, so nothing to gate for reduce motion).
+- Download progress is `lib/download-store.ts` (in memory; `saveTracks`/`downloadTrack` drive it, `cancelDownloads()` aborts the batch's signal). Rows show `DownloadMark` (one primitive selector per id), the header's Download is `DownloadButton` (overall ring, press cancels); one batch at a time. Each song is saved as its own `Artist - Title.m4a`, never an archive. `download.ts` removes partial files after failed transfers; `collection-menu.tsx` prevents a second folder picker while one is open. Marks are static (no spinning, so nothing to gate for reduce motion).
 - Frequently played songs cache in `Paths.cache/frequent-songs`, separate from explicit downloads.
   `lib/song-cache.ts` persists its index and counts with zustand + `persistedStorage`: two listens
   with at least half the song heard qualify (seeks do not count), enabled by default. The 500 MiB
@@ -253,6 +264,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   preserving the shared bitrate ladder. Storage settings clear only this directory and reset counts.
   `infinitunes://action/clear-cache` clears it and lands on Home. It is one
   of the four launcher shortcuts on both platforms; Library remains Android Assistant-only.
+- Keep idle row work cheap (`components/swipeable-row.tsx`, `components/list-row.tsx`): Android swipe shared values are created only for swipe rows, and tonal animation hooks only mount on Android rows. Artwork listens to dimension changes only for player-sized art (`components/ui/artwork.tsx`). Release Metro minification strips `console.log/info/debug` (`metro.config.js`); Expo Router currently hardcodes `freezeOnBlur: false`, so inactive-screen freezing is deferred.
+- Library playlists stay in a `FlashList` (`features/library/library-screen.tsx`); keep its tiles and section header in the list header rather than rebuilding a scrolling column.
+- Playback status is written to `playbackStatusStore` from the native status listener; don't subscribe the controller component to playhead ticks (`playback/playback-controller.tsx`, `playback/playback-status.ts`).
 - Player wash (D3, Now Playing and the Android dock): seed from `react-native-image-colors`, palette and AA check in
   `lib/artwork-colors.ts`; `lib/use-player-colors.ts` reads the colours. No seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText` from `components/wash.tsx`.
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
@@ -328,7 +342,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `SwipeableRow` takes `leading`/`trailing` sets, primary first: it sits next to the row and a full swipe stretches into it and runs it. The row
   is transparent at rest (a translucent capsule while displaced), so it keeps its surface. `SongRow` wraps itself (Play Next primary, Add to
   Queue, optional `trailingSwipe`); the queue uses `SwipeToRemove`. Commit rule: the pure worklet `shouldCommitSwipe` (slow stop reveals, fling
-  or 60% commits; iOS only). Each action must also be a menu entry.
+  or 60% commits; iOS only). ReanimatedSwipeable reports `right` for movement toward leading actions. Each action must also be a menu entry.
 - iOS `MenuView` hosts hug their child and ignore `width: "100%"`: to fill a slot (queue row, header pill) wrap in `MeasuredBox` and pass its size down.
 - Haptics fire only through `lib/haptics.ts` (intent-named: `tap`, `selection`, `toggle`, `confirm`, `reject`, `longPress`, `dragStart`, `commit`; iOS `expo-haptics` generators, Android `performAndroidHapticsAsync`), never `expo-haptics` directly. Buttons, icon buttons, chips, Android segments/switches, pull to refresh, swipe commit, drag, likes, playlist writes and `showFailure`/`FormError` already fire; native iOS controls (UISwitch, segmented control, tabs, menus) tick themselves, so add none there; plain row navigation and scrolling stay silent. Jest mocks `expo-haptics` globally (`test/setup.ts`).
 - Failures, never successes, show in the one `FailureSnackbar` (root layout; M3 snackbar on Android, a glass
@@ -453,6 +467,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 ## Lyrics
 
 - `song.syncedLyrics({ id })` resolves decoded song metadata, tries LRCLIB get, duration-matched (±3 seconds) search, then a cleaned-title retry before JioSaavn plain lyrics. Missing lyrics return nulls; instrumental matches stop fallback. `@infinitunes/core/lyrics` parses LRC and selects the active line. This normalized multi-provider procedure is an exception to catalog raw passthrough; `get.lyrics` remains raw. LRCLIB requests currently bypass the Next catalog cache (client queries stay fresh indefinitely).
+- Web player and song page share `components/player/synced-lyrics.tsx`; song pages query
+  `song.syncedLyrics` directly, without a `has_lyrics` gate. The player prefetches current and
+  next-track lyrics (`lib/lyrics-query.ts`); its shared playhead/seek bridge is `lib/playhead.ts`.
+  Keep scroll-follow math in `@infinitunes/core/lyrics` shared with mobile; the web component
+  owns edge masks and pauses follow while the user interacts. Reduced motion uses instant scroll.
 
 ## Song rows take the slim model, never the raw song
 
