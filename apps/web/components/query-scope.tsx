@@ -11,7 +11,7 @@ function makeQueryClient() {
 
 let browserQueryClient: QueryClient | undefined;
 
-function getQueryClient() {
+export function getQueryClient() {
   // The server must never share a client across concurrent requests.
   if (typeof window === "undefined") return makeQueryClient();
 

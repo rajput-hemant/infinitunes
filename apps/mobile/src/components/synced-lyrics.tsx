@@ -1,4 +1,8 @@
-import { activeLineIndex } from "@infinitunes/core/lyrics";
+import {
+  activeLineIndex,
+  lyricScrollTop,
+  LYRICS_FOLLOW_DELAY_MS,
+} from "@infinitunes/core/lyrics";
 import type { LyricLine } from "@infinitunes/core/lyrics";
 import {
   memo,
@@ -126,7 +130,7 @@ const TimedLines = memo(function TimedLines({
     const y = offsets.current.get(activeRef.current);
     if (!paused.current && y !== undefined)
       scroll.current?.scrollTo({
-        y: Math.max(0, y - height / 3),
+        y: lyricScrollTop(y, height),
         animated: !reduceMotion,
       });
   }, [height, reduceMotion]);
@@ -139,7 +143,7 @@ const TimedLines = memo(function TimedLines({
     resume.current = setTimeout(() => {
       paused.current = false;
       follow();
-    }, 4000);
+    }, LYRICS_FOLLOW_DELAY_MS);
   }
   useEffect(() => {
     activeRef.current = active;

@@ -76,7 +76,10 @@ it("previews synced lines and hides the copyright for lrclib", async () => {
   await open(host);
   expect(
     host.querySelectorAll('[aria-label="Synced lyrics"] button'),
-  ).toHaveLength(2);
+  ).toHaveLength(0);
+  expect(host.querySelectorAll('[aria-label="Synced lyrics"] p')).toHaveLength(
+    2,
+  );
   expect(host.textContent).not.toContain("(c)");
 });
 
@@ -91,6 +94,7 @@ it("follows the playhead and seeks only while this song is the current track", a
   );
   await open(host);
   const lines = () => host.querySelectorAll<HTMLElement>("section button");
+  expect(lines()).toHaveLength(0);
   await act(async () => playhead.set(6));
   expect(host.querySelector('[aria-current="true"]')).toBeNull();
   await act(async () => lines()[0]?.click());

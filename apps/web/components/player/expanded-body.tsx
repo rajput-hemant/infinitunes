@@ -96,11 +96,18 @@ export function ExpandedBody({
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-center md:gap-12 md:px-12 md:pt-16">
-      <div className="flex min-w-0 flex-col gap-4">
+      <div
+        className={cn(
+          "flex min-w-0 flex-col gap-4",
+          showPane &&
+            "max-md:grid max-md:grid-cols-[4rem_minmax(0,1fr)] max-md:items-center max-md:[&>*:nth-child(n+3)]:col-span-2",
+        )}
+      >
         <div
           className={cn(
-            "relative mx-auto aspect-square w-full max-w-88 overflow-hidden rounded-lg shadow-md transition-transform duration-slow ease-spring md:max-w-120",
+            "relative mx-auto aspect-square w-full max-w-88 overflow-hidden rounded-lg shadow-md transition-[transform,max-width,opacity] duration-slow ease-panel md:max-w-120",
             !isPlaying && "md:scale-[0.88]",
+            showPane && "max-md:max-w-16",
           )}
         >
           <ImageWithFallback
@@ -115,7 +122,12 @@ export function ExpandedBody({
 
         {/* The title is centred over the artwork; the like button is pinned to
             the end so it does not pull the text off-centre. */}
-        <div className="relative mt-2 px-12 text-center md:mt-5">
+        <div
+          className={cn(
+            "relative mt-2 px-12 text-center md:mt-5",
+            showPane && "max-md:mt-0 max-md:pr-12 max-md:pl-0 max-md:text-left",
+          )}
+        >
           <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
             {track.name}
           </p>

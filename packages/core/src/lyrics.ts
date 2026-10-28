@@ -37,3 +37,13 @@ export function activeLineIndex(
   }
   return low - 1;
 }
+
+/** Place the active line one third down, without scrolling above the start. */
+export function lyricScrollTop(
+  lineTop: number,
+  viewportHeight: number,
+): number {
+  return Math.max(0, lineTop - viewportHeight / 3);
+}
+
+export const LYRICS_FOLLOW_DELAY_MS = 4000;

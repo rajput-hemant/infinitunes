@@ -182,6 +182,21 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   });
 
   const current = queue[currentIndex];
+  const currentLyricsId = current?.type === "song" ? current.id : undefined;
+  const nextEntry = queue[currentIndex + 1];
+  const nextLyricsId = nextEntry?.type === "song" ? nextEntry.id : undefined;
+  React.useEffect(() => {
+    const ids = [currentLyricsId, nextLyricsId].filter(
+      (id) => id !== undefined,
+    );
+    if (!ids.length) return;
+    // Keep Query and lyrics code out of the initial player chunk.
+    void import("~/lib/lyrics-query")
+      .then(({ prefetchLyrics }) => prefetchLyrics(ids))
+      .catch(() => {
+        /* Prefetch is best effort; opening lyrics can retry. */
+      });
+  }, [currentLyricsId, nextLyricsId]);
 
   usePlayhead({
     store: position,
