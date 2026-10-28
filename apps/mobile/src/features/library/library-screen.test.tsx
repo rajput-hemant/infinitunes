@@ -218,7 +218,7 @@ describe("creating a playlist", () => {
       write.resolve(userPlaylist({ id: "pl-9", name: "Weekend" })),
     );
 
-    expect(await screen.findByText("0 songs")).toBeOnTheScreen();
+    expect(await screen.findByLabelText("Weekend, 0 songs")).toBeOnTheScreen();
     expect(screen.queryByText("Creating…")).toBeNull();
   });
 
