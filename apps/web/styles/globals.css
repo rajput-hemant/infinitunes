@@ -345,7 +345,7 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
     animation-iteration-count: 1 !important;
     transition-property:
       opacity, color, background-color, border-color, outline-color,
-      text-decoration-color, fill, stroke, box-shadow, visibility !important;
+      text-decoration-color, fill, stroke, box-shadow, visibility, display !important;
     transition-duration: var(--duration-base) !important;
     scroll-behavior: auto !important;
   }
@@ -392,7 +392,7 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   animation-iteration-count: 1 !important;
   transition-property:
     opacity, color, background-color, border-color, outline-color,
-    text-decoration-color, fill, stroke, box-shadow, visibility !important;
+    text-decoration-color, fill, stroke, box-shadow, visibility, display !important;
   transition-duration: var(--duration-base) !important;
   scroll-behavior: auto !important;
 }
