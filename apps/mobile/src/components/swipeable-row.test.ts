@@ -60,7 +60,29 @@ describe("shouldCommitSwipe", () => {
         velocity: FLING_VELOCITY,
         side: "leading",
       }),
-    ).toBe(false);
+    ).toBe(true);
+  });
+
+  it("includes exactly 900px/s in either direction but excludes slower releases", () => {
+    for (const side of ["leading", "trailing"] as const) {
+      const direction = side === "leading" ? 1 : -1;
+      expect(
+        shouldCommitSwipe({
+          width: 400,
+          translation: 41 * direction,
+          velocity: 900 * direction,
+          side,
+        }),
+      ).toBe(true);
+      expect(
+        shouldCommitSwipe({
+          width: 400,
+          translation: 41 * direction,
+          velocity: 899 * direction,
+          side,
+        }),
+      ).toBe(false);
+    }
   });
 
   it("ignores a fling away from the side and an unmeasured row", () => {
