@@ -83,6 +83,39 @@ export function ExpandedBody({
   const paneId = React.useId();
   const [tab, setTab] = React.useState<PaneTab>("queue");
   const [showPane, setShowPane] = React.useState(false);
+  const artwork = React.useRef<HTMLDivElement>(null);
+  const previousArt = React.useRef<DOMRect | null>(null);
+  const flight = React.useRef<Animation | null>(null);
+  React.useLayoutEffect(() => {
+    const before = previousArt.current;
+    previousArt.current = null;
+    const art = artwork.current;
+    if (
+      !before ||
+      !art?.animate ||
+      window.matchMedia("(min-width: 768px)").matches
+    )
+      return;
+    flight.current?.cancel();
+    const after = art.getBoundingClientRect();
+    if (!after.width || !after.height) return;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.dataset.motion === "reduced";
+    flight.current = art.animate(
+      reduced
+        ? [{ opacity: 0.5 }, { opacity: 1 }]
+        : [
+            {
+              transformOrigin: "top left",
+              transform: `translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`,
+            },
+            { transformOrigin: "top left", transform: "none" },
+          ],
+      { duration: reduced ? 160 : 340, easing: "cubic-bezier(0.2, 0, 0, 1)" },
+    );
+  });
+  React.useEffect(() => () => flight.current?.cancel(), []);
   const volumeRef = useSliderValueText(
     `${isMuted ? 0 : Math.round(volume * 100)} percent`,
   );
@@ -90,6 +123,7 @@ export function ExpandedBody({
 
   // Phones reveal the pane on demand: the active button closes it again.
   function togglePhonePane(next: PaneTab) {
+    previousArt.current = artwork.current?.getBoundingClientRect() ?? null;
     setShowPane(!(showPane && tab === next));
     setTab(next);
   }
@@ -104,8 +138,9 @@ export function ExpandedBody({
         )}
       >
         <div
+          ref={artwork}
           className={cn(
-            "relative mx-auto aspect-square w-full max-w-88 overflow-hidden rounded-lg shadow-md transition-[transform,max-width,opacity] duration-slow ease-panel md:max-w-120",
+            "relative mx-auto aspect-square w-full max-w-88 overflow-hidden rounded-lg shadow-md transition-[transform,opacity] duration-slow ease-panel md:max-w-120",
             !isPlaying && "md:scale-[0.88]",
             showPane && "max-md:max-w-16",
           )}

@@ -130,6 +130,14 @@ it("resumes after four seconds of idle browsing and respects in-app reduced moti
     expect(host.querySelector('[aria-current="true"]')?.textContent).toBe(
       "Second",
     );
+    section.dispatchEvent(new window.Event("pointerdown", { bubbles: true }));
+    await act(async () => position.set(1));
+    const heldCount = scroll.mock.calls.length;
+    await act(async () => jest.advanceTimersByTime(5000));
+    expect(scroll.mock.calls.length).toBe(heldCount);
+    window.dispatchEvent(new window.Event("pointerup"));
+    await act(async () => jest.advanceTimersByTime(4000));
+    expect(scroll.mock.calls.length).toBe(heldCount + 1);
   } finally {
     await act(async () => root?.unmount());
     root = undefined;

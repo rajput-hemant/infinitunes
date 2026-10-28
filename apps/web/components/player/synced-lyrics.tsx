@@ -92,6 +92,7 @@ const TimedLines = memo(function TimedLines({
 }: Omit<Props, "position"> & { active: number }) {
   const container = useRef<HTMLElement>(null);
   const paused = useRef(false);
+  const pointerHeld = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeRef = useRef(active);
 
@@ -99,7 +100,13 @@ const TimedLines = memo(function TimedLines({
     const host = container.current;
     if (host) host.style.paddingBottom = `${(host.clientHeight * 2) / 3}px`;
     const line = host?.children.item(activeRef.current);
-    if (paused.current || !host || !(line instanceof HTMLElement)) return;
+    if (
+      paused.current ||
+      pointerHeld.current ||
+      !host ||
+      !(line instanceof HTMLElement)
+    )
+      return;
     host.scrollTo({
       top: lyricScrollTop(line.offsetTop, host.clientHeight),
       behavior:
@@ -109,14 +116,27 @@ const TimedLines = memo(function TimedLines({
           : "smooth",
     });
   }, []);
-  function pause() {
+  const pause = useCallback(() => {
     paused.current = true;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       paused.current = false;
       follow();
     }, LYRICS_FOLLOW_DELAY_MS);
-  }
+  }, [follow]);
+  useEffect(() => {
+    function release() {
+      if (!pointerHeld.current) return;
+      pointerHeld.current = false;
+      pause();
+    }
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [pause]);
   useEffect(() => {
     activeRef.current = active;
     follow();
@@ -143,12 +163,12 @@ const TimedLines = memo(function TimedLines({
       onWheel={pause}
       onTouchMove={pause}
       onPointerDown={() => {
+        pointerHeld.current = true;
         paused.current = true;
         if (timer.current) clearTimeout(timer.current);
       }}
-      onPointerUp={pause}
-      onPointerCancel={pause}
       onTouchEnd={pause}
+      onFocusCapture={pause}
       onScroll={() => {
         if (paused.current) pause();
       }}
