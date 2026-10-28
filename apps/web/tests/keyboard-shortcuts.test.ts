@@ -72,3 +72,16 @@ describe("shouldIgnoreShortcut preference (WCAG 2.1.4)", () => {
     ).toBe(false);
   });
 });
+
+describe("shouldIgnoreShortcut media keys", () => {
+  it("leaves hardware media keys to the Media Session", () => {
+    for (const key of [
+      "MediaPlayPause",
+      "MediaTrackNext",
+      "MediaTrackPrevious",
+      "MediaStop",
+    ]) {
+      expect(shouldIgnoreShortcut({ key, target: el("BODY") })).toBe(true);
+    }
+  });
+});

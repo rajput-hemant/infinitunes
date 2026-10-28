@@ -65,6 +65,9 @@ export function shouldIgnoreShortcut(
 ): boolean {
   if (!enabled) return true;
   if (event.defaultPrevented) return true;
+  // Media keys are the Media Session's (`use-media-session`): handling them
+  // here too would toggle twice.
+  if (event.key.startsWith("Media")) return true;
   if (event.ctrlKey || event.metaKey || event.altKey) return true;
 
   const el = asTarget(event.target);
