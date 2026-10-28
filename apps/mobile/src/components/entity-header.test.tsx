@@ -1,14 +1,24 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { pickDownloadFolder } from "~/lib/download";
+import {
+  cancelDownloads,
+  downloadStore,
+  finishSong,
+  setSongProgress,
+  startBatch,
+  startSong,
+} from "~/lib/download-store";
+import { tap } from "~/lib/haptics";
 import { renderScreen } from "~/test/render";
 import { translucentFill } from "~/theme/tokens";
 
 import { EntityHeader } from "./entity-header";
 
+jest.mock("~/lib/haptics");
 jest.mock("~/lib/download", () => ({
   pickDownloadFolder: jest.fn(),
   saveTracks: jest.fn(),
@@ -18,7 +28,70 @@ const rows = [toSongRow(rawSong())];
 const IMAGE = "https://c.saavncdn.com/a-500x500.jpg";
 
 describe("EntityHeader", () => {
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+    cancelDownloads();
+    downloadStore.setState({ queued: {}, active: {}, batch: null });
+  });
+
+  it("turns Download into the run's overall ring, and a press cancels it", async () => {
+    const many = ["a", "b", "c", "d"].map((id) => toSongRow(rawSong({ id })));
+    await renderScreen(
+      <EntityHeader
+        image={IMAGE}
+        title="Album"
+        onPlay={jest.fn()}
+        menu={{ rows: many }}
+      />,
+    );
+    expect(screen.queryByRole("progressbar")).toBeNull();
+
+    let signal!: AbortSignal;
+    await act(async () => {
+      signal = startBatch(["a", "b", "c", "d"], 4);
+      startSong("a", signal);
+      finishSong("a", "saved", signal);
+      startSong("b", signal);
+      setSongProgress("b", 0.5);
+    });
+
+    // 1 done + half of the second, of 4.
+    const ring = screen.getByRole("progressbar", {
+      name: "Downloading 2 of 4, double tap to cancel",
+    });
+    expect(ring).toHaveProp("accessibilityValue", {
+      min: 0,
+      max: 100,
+      now: 38,
+    });
+    expect(screen.queryByRole("button", { name: "Download Album" })).toBeNull();
+
+    await fireEvent.press(ring);
+
+    expect(tap).toHaveBeenCalledTimes(1);
+    expect(signal.aborted).toBe(true);
+    expect(downloadStore.getState().batch).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Download Album" }),
+    ).toBeOnTheScreen();
+  });
+
+  it("keeps Download for a header whose songs are not in the run", async () => {
+    await renderScreen(
+      <EntityHeader
+        image={IMAGE}
+        title="Album"
+        onPlay={jest.fn()}
+        menu={{ rows }}
+      />,
+    );
+
+    await act(async () => void startBatch(["elsewhere"], 1));
+
+    expect(
+      screen.getByRole("button", { name: "Download Album" }),
+    ).toBeOnTheScreen();
+  });
 
   it("lays Shuffle, a content-hugging Play and Download in one centred row, signed out too", async () => {
     jest.replaceProperty(Platform, "OS", "ios");

@@ -12,6 +12,8 @@ import { router } from "expo-router";
 import { AppState } from "react-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
+import { cancelDownloads, startBatch } from "~/lib/download-store";
+import { failureStore } from "~/lib/failure";
 import { notificationPromptStore } from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { CollectionMenuBar } from "~/test/collection-menu-bar";
@@ -116,6 +118,56 @@ describe("download all", () => {
     await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(1));
 
     expect(saveTracks).toHaveBeenCalledWith(folder, rows, "low");
+  });
+
+  it("reports how many songs failed, and nothing when all saved", async () => {
+    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
+    jest.mocked(saveTracks).mockResolvedValue({ saved: 1, failed: 2 });
+    failureStore.setState({ current: null });
+    await renderWithProviders(menu());
+
+    await chooseMenuAction(trigger, "download-all");
+    await waitFor(() =>
+      expect(failureStore.getState().current?.message).toBe(
+        "Couldn't download 2 of 3 songs.",
+      ),
+    );
+
+    failureStore.setState({ current: null });
+    jest.mocked(saveTracks).mockResolvedValue({ saved: 3, failed: 0 });
+    await chooseMenuAction(trigger, "download-all");
+    await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(2));
+    await act(async () => {});
+    expect(failureStore.getState().current).toBeNull();
+  });
+
+  it("stays quiet when the listener cancelled the run", async () => {
+    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
+    jest
+      .mocked(saveTracks)
+      .mockResolvedValue({ saved: 0, failed: 1, cancelled: true });
+    failureStore.setState({ current: null });
+    await renderWithProviders(menu());
+
+    await chooseMenuAction(trigger, "download-all");
+    await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(1));
+    await act(async () => {});
+
+    expect(failureStore.getState().current).toBeNull();
+  });
+
+  it("asks to wait while another run is going", async () => {
+    startBatch(["x"], 1);
+    failureStore.setState({ current: null });
+    await renderWithProviders(menu());
+
+    await chooseMenuAction(trigger, "download-all");
+
+    expect(failureStore.getState().current?.message).toBe(
+      "Another download is still running.",
+    );
+    expect(pickDownloadFolder).not.toHaveBeenCalled();
+    cancelDownloads();
   });
 
   it("asks for notifications once and posts the result when it finishes", async () => {

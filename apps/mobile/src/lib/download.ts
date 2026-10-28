@@ -4,12 +4,28 @@ import { Directory, File, Paths } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
 
+import {
+  endBatch,
+  finishSong,
+  setSongProgress,
+  startBatch,
+  startSong,
+} from "./download-store";
 import { ensureNotificationPermission } from "./notifications";
 
 type DownloadableTrack = Pick<
   QueueSource,
   "name" | "download_url" | "maxQuality"
->;
+> & {
+  /** Marks the song's row while it downloads; leave out for none. */
+  id?: string;
+};
+
+type TransferOptions = {
+  signal?: AbortSignal;
+  /** The fraction done, `null` while the server has not said how big it is. */
+  onProgress?: (fraction: number | null) => void;
+};
 
 const MIME_TYPE = "audio/mp4";
 
@@ -77,6 +93,7 @@ export async function downloadAudio(
   track: DownloadableTrack,
   quality: StreamQuality,
   destination: File,
+  { signal, onProgress }: TransferOptions = {},
 ): Promise<{ file: File; source: string }> {
   let failure: unknown = new Error("This song can't be downloaded right now.");
   for (const source of getDownloadCandidates(
@@ -87,12 +104,19 @@ export async function downloadAudio(
     try {
       const file = await File.downloadFileAsync(source, destination, {
         idempotent: true,
+        ...(signal && { signal }),
+        ...(onProgress && {
+          onProgress: ({ bytesWritten, totalBytes }) =>
+            onProgress(totalBytes > 0 ? bytesWritten / totalBytes : null),
+        }),
       });
       return { file, source };
     } catch (error) {
       failure = error;
       // Android can leave a partial file after a failed transfer.
       if (destination.exists) destination.delete();
+      // A cancelled transfer must not go on to the next bitrate.
+      if (signal?.aborted) throw error;
     }
   }
   throw failure;
@@ -101,12 +125,18 @@ export async function downloadAudio(
 async function downloadToCache(
   track: DownloadableTrack,
   quality: StreamQuality,
+  signal?: AbortSignal,
 ) {
   const temporaryName = `${baseNameFor(track.name)}-${newQueueItemId()}.mp4`;
+  const { id } = track;
   const { file } = await downloadAudio(
     track,
     quality,
     new File(Paths.cache, temporaryName),
+    {
+      signal,
+      onProgress: id === undefined ? undefined : (f) => setSongProgress(id, f),
+    },
   );
   return file;
 }
@@ -122,7 +152,15 @@ export async function downloadTrack(
 ) {
   await settleNotificationPermission();
   sweepSharedFiles();
-  const file = await downloadToCache(track, quality);
+  startSong(track.id);
+  let file: File;
+  try {
+    file = await downloadToCache(track, quality);
+    finishSong(track.id, "saved");
+  } catch (error) {
+    finishSong(track.id, "failed");
+    throw error;
+  }
   try {
     await shareAsync(file.uri, {
       mimeType: MIME_TYPE,
@@ -146,54 +184,77 @@ export async function pickDownloadFolder(): Promise<Directory | null> {
   }
 }
 
-export type SaveResult = { saved: number; failed: number };
+/** `cancelled` is set only when the listener stopped the run. */
+export type SaveResult = {
+  saved: number;
+  failed: number;
+  cancelled?: true;
+};
 
 /**
  * Saves every track into `folder`, one at a time (the web's "Download" of a
  * whole album or playlist). A track without a link or whose download fails
- * counts as failed; the rest still save.
+ * counts as failed; the rest still save. `cancelDownloads()` stops the run:
+ * the song in flight is aborted, the rest never start, and neither counts as
+ * failed.
  */
 export async function saveTracks(
   folder: Directory,
   tracks: readonly DownloadableTrack[],
   quality: StreamQuality,
 ): Promise<SaveResult> {
-  await settleNotificationPermission();
   const result: SaveResult = { saved: 0, failed: 0 };
-  // iOS's createFile throws on an existing file, so a second "Download all"
-  // into the same folder would fail every track. Pick a free name instead
-  // (Android's document provider renames on its own).
-  const taken = new Set<string>();
-  if (Platform.OS !== "android" && tracks.length > 0) {
-    try {
-      for (const entry of folder.list()) taken.add(entry.name);
-    } catch {
-      // Unreadable listing: fall back to the plain name.
-    }
-  }
-  for (const track of tracks) {
-    let cached: File | undefined;
-    try {
-      cached = await downloadToCache(track, quality);
-      // Android's document provider appends the extension for the type.
-      let name = baseNameFor(track.name);
-      if (Platform.OS !== "android") {
-        name = uniqueFileName(name, taken);
-        taken.add(name);
-      }
-      const target = folder.createFile(name, MIME_TYPE);
-      await target.write(await cached.bytes());
-      result.saved += 1;
-    } catch {
-      result.failed += 1;
-    } finally {
-      // A failed save must not leave the download behind in the cache.
+  // Started first, so the marks show while the permission prompt is up.
+  const signal = startBatch(
+    tracks.flatMap((track) => (track.id === undefined ? [] : [track.id])),
+    tracks.length,
+  );
+  try {
+    await settleNotificationPermission();
+    // iOS's createFile throws on an existing file, so a second "Download all"
+    // into the same folder would fail every track. Pick a free name instead
+    // (Android's document provider renames on its own).
+    const taken = new Set<string>();
+    if (Platform.OS !== "android" && tracks.length > 0) {
       try {
-        cached?.delete();
+        for (const entry of folder.list()) taken.add(entry.name);
       } catch {
-        // The cache is the system's to purge; a leftover file is harmless.
+        // Unreadable listing: fall back to the plain name.
       }
     }
+    for (const track of tracks) {
+      if (signal.aborted) break;
+      startSong(track.id, signal);
+      let cached: File | undefined;
+      try {
+        cached = await downloadToCache(track, quality, signal);
+        // Android's document provider appends the extension for the type.
+        let name = baseNameFor(track.name);
+        if (Platform.OS !== "android") {
+          name = uniqueFileName(name, taken);
+          taken.add(name);
+        }
+        const target = folder.createFile(name, MIME_TYPE);
+        await target.write(await cached.bytes());
+        result.saved += 1;
+        finishSong(track.id, "saved", signal);
+      } catch {
+        // An aborted transfer is the listener's doing, not a failed song.
+        if (signal.aborted) break;
+        result.failed += 1;
+        finishSong(track.id, "failed", signal);
+      } finally {
+        // A failed save must not leave the download behind in the cache.
+        try {
+          cached?.delete();
+        } catch {
+          // The cache is the system's to purge; a leftover file is harmless.
+        }
+      }
+    }
+  } finally {
+    if (signal.aborted) result.cancelled = true;
+    endBatch(signal);
   }
   return result;
 }

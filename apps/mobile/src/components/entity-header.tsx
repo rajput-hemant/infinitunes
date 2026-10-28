@@ -7,9 +7,9 @@ import { artShadow, translucentFill } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
-import { downloadAll } from "./collection-menu";
 import type { CollectionMenuSpec } from "./collection-menu";
 import { DetailMenu } from "./detail/detail-menu";
+import { DownloadButton } from "./download-button";
 import { ExplicitBadge } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Button } from "./ui/button";
@@ -211,13 +211,7 @@ export function EntityHeader({
               onPress={onPlay}
             />
             {songs.length > 0 ? (
-              <IconButton
-                icon={{ ios: "arrow.down.circle", android: "download" }}
-                label={`Download ${title}`}
-                variant="tonal"
-                fill={glass}
-                onPress={() => void downloadAll(songs)}
-              />
+              <DownloadButton title={title} songs={songs} fill={glass} />
             ) : null}
           </View>
         </View>

@@ -2,6 +2,7 @@ import type { SongRowItem } from "@infinitunes/types";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
 import type { SaveResult } from "~/lib/download";
+import { downloadStore } from "~/lib/download-store";
 import { showFailure } from "~/lib/failure";
 import {
   ensureNotificationPermission,
@@ -23,15 +24,22 @@ import type { MenuEntry } from "./native-menu";
 
 /**
  * Saves the songs into a folder the listener picks, at the download quality
- * preference; dismissing the picker does nothing.
+ * preference; dismissing the picker does nothing. One run at a time: while
+ * one is going, another asks the listener to wait.
  */
 export async function downloadAll(songs: readonly SongRowItem[]) {
+  if (downloadStore.getState().batch) {
+    showFailure("Another download is still running.");
+    return;
+  }
   const folder = await pickDownloadFolder();
   if (!folder) return;
   const { downloadQuality } = preferencesStore.getState();
   void ensureNotificationPermission();
   // The notification posts only in the background; the snackbar is for now.
   const finished = (result: SaveResult) => {
+    // Stopping is the listener's own choice: nothing to report.
+    if (result.cancelled) return;
     if (result.failed > 0) {
       showFailure(
         result.saved === 0
