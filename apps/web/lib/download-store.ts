@@ -58,6 +58,8 @@ let state = IDLE;
 let queue: Entry[] = [];
 let current: Entry | null = null;
 let progress: number | null = null;
+let progressFrame: number | null = null;
+let pendingProgress: number | null = null;
 let controller: AbortController | null = null;
 let draining = false;
 let nextBatch = 1;
@@ -90,11 +92,14 @@ function settle(id: number) {
 }
 
 function setProgress(fraction: number | null) {
-  // Whole percents: a chunk never re-renders more than the ring can show.
-  const next = fraction === null ? null : Math.round(fraction * 100) / 100;
-  if (next === progress) return;
-  progress = next;
-  publish();
+  pendingProgress = fraction === null ? null : Math.round(fraction * 100) / 100;
+  if (progressFrame !== null) return;
+  progressFrame = requestAnimationFrame(() => {
+    progressFrame = null;
+    if (pendingProgress === progress) return;
+    progress = pendingProgress;
+    publish();
+  });
 }
 
 async function drain() {
@@ -120,6 +125,8 @@ async function drain() {
 
     batch.done++;
     batch.remaining--;
+    if (progressFrame !== null) cancelAnimationFrame(progressFrame);
+    progressFrame = null;
     current = null;
     controller = null;
     publish();

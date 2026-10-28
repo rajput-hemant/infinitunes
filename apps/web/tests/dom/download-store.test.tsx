@@ -140,14 +140,51 @@ describe("download store", () => {
     // Size unknown: no value, the ring spins (a static arc under reduced motion).
     expect(rows.ring("a")?.hasAttribute("aria-valuenow")).toBe(false);
 
-    await act(async () => a.progress(0.4));
+    await act(async () => {
+      a.progress(0.4);
+      await new Promise((r) => requestAnimationFrame(r));
+    });
     expect(rows.ring("a")?.getAttribute("aria-valuenow")).toBe("40");
-    await act(async () => a.progress(1));
+    await act(async () => {
+      a.progress(1);
+      await new Promise((r) => requestAnimationFrame(r));
+    });
     expect(rows.ring("a")?.getAttribute("aria-valuenow")).toBe("100");
 
     await act(async () => a.finish());
     await queued!.done;
     await rows.unmount();
+  });
+
+  it("coalesces a burst of progress updates into one animation frame", async () => {
+    const original = globalThis.requestAnimationFrame;
+    let callback: FrameRequestCallback | undefined;
+    let frames = 0;
+    globalThis.requestAnimationFrame = (cb) => {
+      frames++;
+      callback = cb;
+      return 1;
+    };
+    const a = probe("a");
+    const rows = await mountRows(["a"]);
+    try {
+      const queued = enqueueDownloads([a.job])!;
+      await a.started;
+      await act(async () => {
+        a.progress(0.1);
+        a.progress(0.4);
+        a.progress(0.8);
+      });
+      expect(frames).toBe(1);
+      expect(rows.ring("a")?.hasAttribute("aria-valuenow")).toBe(false);
+      await act(async () => callback?.(0));
+      expect(rows.ring("a")?.getAttribute("aria-valuenow")).toBe("80");
+      await act(async () => a.finish());
+      await queued.done;
+    } finally {
+      globalThis.requestAnimationFrame = original;
+      await rows.unmount();
+    }
   });
 
   it("counts a failed song and carries on with the rest", async () => {
