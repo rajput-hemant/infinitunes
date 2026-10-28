@@ -75,6 +75,7 @@ describe("reduced motion keeps gentle fades", () => {
         .map((prop) => prop.trim());
       expect(props).toContain("opacity");
       expect(props).toContain("visibility");
+      expect(props).toContain("display");
       for (const spatial of [
         "transform",
         "translate",
