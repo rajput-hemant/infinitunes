@@ -43,6 +43,22 @@ describe("togglePlayback", () => {
     expect(play).not.toHaveBeenCalled();
   });
 
+  it("pauses a track the status calls playing while the engine's own flag is down", () => {
+    playerStore.getState().playTracks([toSongRow(rawSong())]);
+    audioPlayer.play();
+    // Android: `playing` is false while Media3 buffers a track playing on.
+    const flag = jest
+      .spyOn(lastPlayer(), "playing", "get")
+      .mockReturnValue(false);
+    jest.clearAllMocks();
+
+    togglePlayback();
+    flag.mockRestore();
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(play).not.toHaveBeenCalled();
+  });
+
   it("starts the restored queue on the first press, without touching the engine", () => {
     restoreQueue();
 

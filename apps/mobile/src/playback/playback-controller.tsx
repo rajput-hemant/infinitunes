@@ -6,6 +6,7 @@ import {
   type LoadTrack,
 } from "@infinitunes/core/react/use-track-playback";
 import type { Queue } from "@infinitunes/types";
+import type { AudioStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { showFailure } from "~/lib/failure";
@@ -31,7 +32,11 @@ import {
   replaceSource,
 } from "./audio-engine";
 import { capturePlaybackRequest } from "./playback-request";
-import { playbackPosition, playbackStatusStore } from "./playback-status";
+import {
+  playbackPosition,
+  playbackStatusStore,
+  usePlaybackStatus,
+} from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
 import { resumePlayback } from "./transport";
@@ -47,6 +52,28 @@ const activateLockScreen = (track: Queue) =>
   });
 
 const getPosition = () => audioPlayer.currentTime;
+
+/** The store changes only when a field the UI reads does (position ticks are not one). */
+function publishStatus(update: AudioStatus) {
+  const next = {
+    playing: update.playing,
+    buffering: update.isBuffering,
+    duration: update.duration,
+    bufferedTime: update.bufferedTime ?? 0,
+  };
+  const previous = playbackStatusStore.getState();
+  if (
+    previous.playing !== next.playing ||
+    previous.buffering !== next.buffering ||
+    previous.duration !== next.duration ||
+    previous.bufferedTime !== next.bufferedTime
+  ) {
+    playbackStatusStore.setState(next);
+  }
+}
+
+/** How soon a playing UI notices an engine that stopped without saying so. */
+const STATUS_RECHECK_MS = 500;
 
 /** What the engine reported for the source loaded last. */
 type SourceState = { error?: string; loaded: boolean };
@@ -80,7 +107,9 @@ export function PlaybackController() {
     updateQueue,
   } = playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
-  const [playing, setPlaying] = useState(() => audioPlayer.playing);
+  // The store, not a copy: whoever changed the engine (a headset, the lock
+  // screen, a keyboard's media key) shows once the status reaches it.
+  const playing = usePlaybackStatus((state) => state.playing);
   const lockScreenActive = useRef(false);
   // The current source's outcome, kept per load. The status hook cannot
   // carry it: the engine reports `error` on one event only (the next status
@@ -101,6 +130,13 @@ export function PlaybackController() {
     entryId: string;
     isCurrent: () => boolean;
   } | null>(null);
+  // Whether a status belongs to the loaded entry: the queue can move before
+  // React runs the source-replacement effect.
+  const acceptsStatus = useCallback((update: AudioStatus) => {
+    if (!isCurrentSource(update)) return false;
+    const current = selectCurrentTrack(playerStore.getState());
+    return !current || current.queueItemId === loadedEntry.current;
+  }, []);
   const load = useCallback<LoadTrack>((src, options) => {
     awaitingRefill.current = null;
     const current = selectCurrentTrack(playerStore.getState());
@@ -152,7 +188,6 @@ export function PlaybackController() {
         audioPlayer.clearLockScreenControls();
         lockScreenActive.current = false;
         // `replace(null)` emits no status: show the stopped engine now.
-        setPlaying(false);
         playbackStatusStore.setState({
           playing: false,
           buffering: false,
@@ -229,26 +264,9 @@ export function PlaybackController() {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
-        if (!isCurrentSource(update)) return;
+        if (!acceptsStatus(update)) return;
         const current = selectCurrentTrack(playerStore.getState());
-        // The queue can move before React runs the source-replacement effect.
-        if (current && current.queueItemId !== loadedEntry.current) return;
-        setPlaying(update.playing);
-        const nextStatus = {
-          playing: update.playing,
-          buffering: update.isBuffering,
-          duration: update.duration,
-          bufferedTime: update.bufferedTime ?? 0,
-        };
-        const previousStatus = playbackStatusStore.getState();
-        if (
-          previousStatus.playing !== nextStatus.playing ||
-          previousStatus.buffering !== nextStatus.buffering ||
-          previousStatus.duration !== nextStatus.duration ||
-          previousStatus.bufferedTime !== nextStatus.bufferedTime
-        ) {
-          playbackStatusStore.setState(nextStatus);
-        }
+        publishStatus(update);
         if (
           current &&
           countListen.current(
@@ -301,7 +319,23 @@ export function PlaybackController() {
       },
     );
     return () => subscription.remove();
-  }, [advanceAfterEnd, streamQuality]);
+  }, [acceptsStatus, advanceAfterEnd, streamQuality]);
+
+  // A pause from outside the app (headset, lock screen, keyboard media key)
+  // is not a JS action, and a paused engine ticks no more status: the one
+  // event that carried it can be missed or read before the engine settled
+  // (iOS has no observer on the play state itself). While the UI says playing,
+  // ask the engine what it is doing, as a status would.
+  useEffect(() => {
+    if (!playing) return;
+    const id = setInterval(() => {
+      const status = audioPlayer.currentStatus;
+      if (!status.playing && !status.isBuffering && acceptsStatus(status)) {
+        publishStatus(status);
+      }
+    }, STATUS_RECHECK_MS);
+    return () => clearInterval(id);
+  }, [playing, acceptsStatus]);
 
   // Lock screen, notification, headset and Bluetooth next/previous: the engine
   // holds one source (patches/expo-audio), so it only reports the press.

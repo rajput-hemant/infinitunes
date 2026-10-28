@@ -155,6 +155,16 @@ export class FakeAudioPlayer {
     this.queueRemote(command)();
   }
 
+  /** The engine reports a status change nothing in JS asked for (a media key, a headset). */
+  emitStatus(patch: Partial<AudioStatus>) {
+    this.update(patch);
+  }
+
+  /** The engine stopped and said nothing: only a read of `currentStatus` shows it. */
+  stopSilently() {
+    this.currentStatus = { ...this.currentStatus, playing: false };
+  }
+
   /** A native event already emitted, waiting for delivery to JS. */
   queueStatus(patch: Partial<AudioStatus>) {
     const status = { ...this.currentStatus, ...patch };
