@@ -159,7 +159,7 @@ const TimedLines = memo(function TimedLines({
       ref={container}
       aria-label="Synced lyrics"
       tabIndex={0}
-      className="relative h-full min-h-0 overflow-y-auto overscroll-contain pt-8 pb-24 [mask-image:linear-gradient(to_bottom,transparent,black_2rem,black_calc(100%-2rem),transparent)] forced-colors:[mask-image:none]"
+      className="scrollbar-hover relative h-full min-h-0 overflow-y-auto overscroll-contain pt-8 pb-24 [mask-image:linear-gradient(to_bottom,transparent,black_2rem,black_calc(100%-2rem),transparent)] forced-colors:[mask-image:none]"
       onWheel={pause}
       onTouchMove={pause}
       onPointerDown={() => {

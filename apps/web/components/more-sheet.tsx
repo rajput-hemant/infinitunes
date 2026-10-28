@@ -104,7 +104,7 @@ export function MoreSheet(props: MoreSheetProps) {
 
         <Separator className="mb-2 mt-4" />
 
-        <div className="min-h-0 overflow-x-hidden overflow-y-auto">
+        <div className="scrollbar-hover min-h-0 overflow-x-hidden overflow-y-auto">
           <div
             className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
             style={{ transform: `translateX(${isSharing ? -110 : 0}%)` }}

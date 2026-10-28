@@ -46,7 +46,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
             Couldn&apos;t load your playlists. You can still create a new one.
           </output>
         ) : playlists.length !== 0 ? (
-          <div className="-mx-2 flex max-h-80 flex-col gap-1 overflow-y-auto">
+          <div className="scrollbar-hover -mx-2 flex max-h-80 flex-col gap-1 overflow-y-auto">
             {playlists.map(({ id, name, songCount }) => (
               <button
                 key={id}

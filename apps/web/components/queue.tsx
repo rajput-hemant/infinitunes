@@ -156,7 +156,7 @@ export function Queue({ open, onOpenChange }: QueueProps) {
           </div>
           <div
             data-queue-scroll=""
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 min-[1440px]:pb-28"
+            className="scrollbar-hover min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 min-[1440px]:pb-28"
           >
             <QueueList upNextOnly />
             {upNext === 0 && (

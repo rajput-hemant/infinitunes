@@ -46,7 +46,7 @@ export function AuthModal({
         router.back();
       }}
     >
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-(--r-lg) p-6 sm:max-w-120">
+      <DialogContent className="scrollbar-hover max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-(--r-lg) p-6 sm:max-w-120">
         <DialogHeader className="gap-1">
           <DialogTitle className="text-center font-heading text-[1.75rem]/8 font-bold tracking-tight text-foreground">
             {title}

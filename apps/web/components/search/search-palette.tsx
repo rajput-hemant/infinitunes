@@ -142,7 +142,7 @@ function SearchPaletteDialog({
           </DialogClose>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[min(60vh,32rem)]">
+        <div className="scrollbar-hover min-h-0 flex-1 overflow-y-auto md:max-h-[min(60vh,32rem)]">
           <SearchPaletteBody
             query={debouncedQuery}
             listboxId={LISTBOX_ID}
