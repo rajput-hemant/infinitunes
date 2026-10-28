@@ -1,5 +1,5 @@
 import { vars } from "nativewind";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AppState, StyleSheet, useColorScheme, View } from "react-native";
 
@@ -30,12 +30,13 @@ export function DynamicColorRoot({ children }: { children: ReactNode }) {
     });
     return () => subscription.remove();
   }, []);
-  // Rendered again only for the scheme or a refresh (the children keep their
-  // identity), so the variables need no memo; `generation` says why we are here.
-  const variables =
-    hasDynamicColor && generation >= 0
-      ? vars(toVariables(paletteFor(scheme)))
-      : undefined;
+  const variables = useMemo(
+    () =>
+      hasDynamicColor && generation >= 0
+        ? vars(toVariables(paletteFor(scheme)))
+        : undefined,
+    [scheme, generation],
+  );
   return <View style={[styles.root, variables]}>{children}</View>;
 }
 
