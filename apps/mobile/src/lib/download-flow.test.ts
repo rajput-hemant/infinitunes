@@ -297,6 +297,23 @@ describe("saveTracks", () => {
     expect(downloadStore.getState().batch).toBeNull();
   });
 
+  it("does not save a transfer that resolves after cancellation", async () => {
+    jest
+      .mocked(File.downloadFileAsync)
+      .mockImplementationOnce(async (_url, destination) => {
+        cancelDownloads();
+        return destination;
+      });
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(mockCreated).toEqual([]);
+    expect(mockDeleted).toHaveLength(1);
+  });
+
   it("saves an empty list as nothing saved", async () => {
     await expect(saveTracks(new Directory(), [], "high")).resolves.toEqual({
       saved: 0,

@@ -228,14 +228,17 @@ export async function saveTracks(
       let cached: File | undefined;
       try {
         cached = await downloadToCache(track, quality, signal);
+        if (signal.aborted) break;
         // Android's document provider appends the extension for the type.
         let name = baseNameFor(track.name);
         if (Platform.OS !== "android") {
           name = uniqueFileName(name, taken);
           taken.add(name);
         }
+        const bytes = await cached.bytes();
+        if (signal.aborted) break;
         const target = folder.createFile(name, MIME_TYPE);
-        await target.write(await cached.bytes());
+        await target.write(bytes);
         result.saved += 1;
         finishSong(track.id, "saved", signal);
       } catch {
