@@ -11,6 +11,8 @@ type MockWritten = { name: string; mime: string | null };
 const mockCreated: MockWritten[] = [];
 const mockDeleted: string[] = [];
 let mockWriteFails = false;
+let mockCancelDuringWrite = false;
+let mockCancel = () => {};
 let mockExisting: string[] = [];
 
 jest.mock("expo-file-system", () => {
@@ -35,7 +37,9 @@ jest.mock("expo-file-system", () => {
       return {
         write: async () => {
           if (mockWriteFails) throw new Error("disk full");
+          if (mockCancelDuringWrite) mockCancel();
         },
+        delete: () => void mockDeleted.push(name),
       };
     }
   }
@@ -65,6 +69,8 @@ beforeEach(() => {
   mockCreated.length = 0;
   mockDeleted.length = 0;
   mockWriteFails = false;
+  mockCancelDuringWrite = false;
+  mockCancel = cancelDownloads;
   mockExisting = [];
   jest.clearAllMocks();
 });
@@ -241,6 +247,7 @@ describe("saveTracks", () => {
     ).resolves.toEqual({ saved: 0, failed: 1 });
 
     expect(mockDeleted).toEqual([
+      "FA9LA.mp4",
       jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri,
     ]);
   });
@@ -295,6 +302,45 @@ describe("saveTracks", () => {
     expect(File.downloadFileAsync).toHaveBeenCalledTimes(1);
     expect(mockCreated).toEqual([]);
     expect(downloadStore.getState().batch).toBeNull();
+  });
+
+  it("does not save a transfer that resolves after cancellation", async () => {
+    jest
+      .mocked(File.downloadFileAsync)
+      .mockImplementationOnce(async (_url, destination) => {
+        cancelDownloads();
+        return destination as File;
+      });
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(mockCreated).toEqual([]);
+    expect(mockDeleted).toHaveLength(1);
+  });
+
+  it("removes the destination if cancelled during the write", async () => {
+    mockCancelDuringWrite = true;
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 0, cancelled: true });
+    expect(mockDeleted).toContain("FA9LA.mp4");
+  });
+
+  it("removes a partial destination when the write fails", async () => {
+    mockWriteFails = true;
+    const result = await saveTracks(
+      new Directory(),
+      [track({ id: "a" })],
+      "high",
+    );
+    expect(result).toEqual({ saved: 0, failed: 1 });
+    expect(mockDeleted).toContain("FA9LA.mp4");
   });
 
   it("saves an empty list as nothing saved", async () => {

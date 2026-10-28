@@ -156,6 +156,15 @@ describe("readAudio", () => {
 });
 
 describe("download button", () => {
+  it("uses a safe filename for Windows device names and truncated dots", async () => {
+    globalThis.fetch = fetchStub(ok);
+    const saved = captureSaves();
+    await downloadAll([song("CON"), song(`${"a".repeat(119)}.more`)]);
+    expect(saved.map((s) => s.name)).toEqual([
+      "_CON.m4a",
+      `${"a".repeat(119)}.m4a`,
+    ]);
+  });
   it("saves one song as a single m4a named Artist - Title, with no toast", async () => {
     globalThis.fetch = fetchStub(ok);
     const saved = captureSaves();

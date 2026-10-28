@@ -226,19 +226,28 @@ export async function saveTracks(
       if (signal.aborted) break;
       startSong(track.id, signal);
       let cached: File | undefined;
+      let target: File | undefined;
       try {
         cached = await downloadToCache(track, quality, signal);
+        if (signal.aborted) break;
         // Android's document provider appends the extension for the type.
         let name = baseNameFor(track.name);
         if (Platform.OS !== "android") {
           name = uniqueFileName(name, taken);
           taken.add(name);
         }
-        const target = folder.createFile(name, MIME_TYPE);
-        await target.write(await cached.bytes());
+        const bytes = await cached.bytes();
+        if (signal.aborted) break;
+        target = folder.createFile(name, MIME_TYPE);
+        await target.write(bytes);
+        if (signal.aborted) {
+          target.delete();
+          break;
+        }
         result.saved += 1;
         finishSong(track.id, "saved", signal);
       } catch {
+        if (target) deleteQuietly(target);
         // An aborted transfer is the listener's doing, not a failed song.
         if (signal.aborted) break;
         result.failed += 1;

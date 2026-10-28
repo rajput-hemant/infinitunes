@@ -93,7 +93,9 @@ function safeName(name: string): string {
     .trim()
     .replace(/^\.+|[. ]+$/g, "")
     .slice(0, 120)
-    .trim();
+    .replace(/[. ]+$/g, "");
+  if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(clean))
+    return `_${clean}`;
   return clean || "Download";
 }
 
