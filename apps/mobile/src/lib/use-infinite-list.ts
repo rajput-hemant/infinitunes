@@ -1,5 +1,6 @@
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery, type QueryKey } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 /** Items per page of every catalog list (the web's `n: 50`). */
 export const CATALOG_PAGE_SIZE = 50;
@@ -51,7 +52,10 @@ export function useInfiniteList<Page, Item>({
         : undefined,
   });
 
-  const items = uniqueBy(query.data?.pages.flatMap(itemsOf) ?? [], keyOf);
+  const items = useMemo(
+    () => uniqueBy(query.data?.pages.flatMap(itemsOf) ?? [], keyOf),
+    [query.data?.pages, itemsOf, keyOf],
+  );
 
   function loadMore() {
     if (query.hasNextPage && !query.isFetchingNextPage) {

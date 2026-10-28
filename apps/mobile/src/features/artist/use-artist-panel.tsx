@@ -22,6 +22,9 @@ import { useArtistPages } from "./use-artist-pages";
 /** Songs shown on the Overview before the shelves; the Songs tab lists them all. */
 const OVERVIEW_SONGS = 10;
 
+const itemKey = (item: { id: string }) => item.id;
+const albumCard = (album: Album) => toCardItem(album);
+
 type ArtistPanel = {
   items: ArtistListItem[];
   footer: ReactElement | null;
@@ -86,15 +89,15 @@ export function useArtistPanel({
     source: "songs",
     category,
     toItem: toSongRow,
-    keyOf: (row) => row.id,
+    keyOf: itemKey,
     enabled: tab === "songs",
   });
   const albums = useArtistPages({
     artistId: artist.artistId,
     source: "albums",
     category,
-    toItem: (album: Album) => toCardItem(album),
-    keyOf: (card) => card.id,
+    toItem: albumCard,
+    keyOf: itemKey,
     enabled: tab === "albums",
   });
 

@@ -1,4 +1,5 @@
 import { getErrorCode } from "@infinitunes/core/error-code";
+import type { SearchReturnType } from "@infinitunes/types";
 
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
@@ -8,6 +9,9 @@ import { BY_TYPE_INPUT } from "./search-types";
 import type { ListSearchType } from "./search-types";
 
 const PAGE_SIZE = 50;
+const searchItems = (page: SearchReturnType): readonly SearchEntry[] =>
+  page.results;
+const searchKey = (entry: SearchEntry) => entry.id;
 
 export type TypeResultsStatus = "loading" | "error" | "empty" | "ready";
 
@@ -26,9 +30,9 @@ export function useTypeResults(query: string, type: ListSearchType) {
         page,
         n: PAGE_SIZE,
       }),
-    itemsOf: (page): readonly SearchEntry[] => page.results,
+    itemsOf: searchItems,
     hasMore: (lastPage, pages) => pages.length * PAGE_SIZE < lastPage.total,
-    keyOf: (entry) => entry.id,
+    keyOf: searchKey,
   });
 
   return {
