@@ -214,7 +214,7 @@ function derivePlayerColors(
 
   return checked({
     scheme,
-    wash: [hex(m3.secondaryPalette.tone(dark ? 30 : 90)), hex(m3.surface)],
+    wash: [androidWashTop(seed, dark), hex(m3.surface)],
     foreground: hex(m3.onSurface),
     muted: hex(m3.onSurfaceVariant),
     accent: hex(m3.primary),
@@ -223,6 +223,27 @@ function derivePlayerColors(
     track: hex(m3.outline),
     dock,
   });
+}
+
+/** Below this chroma a cover is grey: its wash stays grey (no invented hue). */
+const GREY_CHROMA = 6;
+/** The chroma band of a coloured cover's Android wash: a muted cover still reads as its colour, a loud one stays a wash. */
+const WASH_CHROMA = { min: 36, max: 48 };
+
+/**
+ * Android's wash colour: the artwork's hue at tone 25 (dark) or 90 (light),
+ * its chroma held in `WASH_CHROMA`. Material's secondary palette (the previous source)
+ * halves a muted cover's chroma, so blue-grey art washed in plain grey that
+ * did not read against the dark surface. The contrast check still runs.
+ */
+function androidWashTop(seed: string, dark: boolean): string {
+  const { argbFromHex, Hct, hexFromArgb } = materialColors();
+  const source = Hct.fromInt(argbFromHex(seed));
+  const chroma =
+    source.chroma < GREY_CHROMA
+      ? source.chroma
+      : Math.min(Math.max(source.chroma, WASH_CHROMA.min), WASH_CHROMA.max);
+  return hexFromArgb(Hct.from(source.hue, chroma, dark ? 25 : 90).toInt());
 }
 
 /**
