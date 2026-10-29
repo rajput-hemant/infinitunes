@@ -21,7 +21,7 @@ export function ArtistScreen({ token, initialTab }: ArtistScreenProps) {
   return (
     <DetailFrame
       query={query}
-      skeleton={<ArtistSkeleton />}
+      skeleton={<ArtistSkeleton tab={initialTab} />}
       noun="Artist"
       icon={{ ios: "music.microphone", android: "artist" }}
       identity={(artist) => ({

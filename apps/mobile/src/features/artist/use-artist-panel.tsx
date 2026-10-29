@@ -54,11 +54,13 @@ function pagedPanel(
   },
   items: ArtistListItem[],
   emptyTitle: string,
+  media = false,
 ): ArtistPanel {
   return {
     items,
     footer: (
       <PagedFooter
+        media={media}
         isPending={pages.isPending}
         error={pages.error}
         isFetchingNextPage={pages.isFetchingNextPage}
@@ -113,7 +115,7 @@ export function useArtistPanel({
     case "songs":
       return pagedPanel(songs, songListItems, "No songs yet");
     case "albums":
-      return pagedPanel(albums, albumListItems, "No albums yet");
+      return pagedPanel(albums, albumListItems, "No albums yet", true);
     case "bio":
       return {
         items: bioListItems,

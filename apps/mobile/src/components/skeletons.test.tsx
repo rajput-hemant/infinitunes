@@ -8,6 +8,7 @@ import { textStyles } from "~/theme/tokens";
 import {
   EntityHeaderSkeleton,
   LyricsSkeleton,
+  MediaListSkeleton,
   ShelfSkeleton,
   SkeletonText,
   SongListSkeleton,
@@ -26,6 +27,14 @@ describe("SongListSkeleton", () => {
     expect(screen.getAllByTestId("row-skeleton-like")).toHaveLength(3);
     expect(screen.getAllByTestId("row-skeleton-menu")).toHaveLength(3);
   });
+});
+
+it("draws playlist rows with a menu and no song favourite", async () => {
+  signInAs("user-1");
+  await renderScreen(<MediaListSkeleton rows={3} menu />);
+  expect(screen.getAllByTestId("media-skeleton-row")).toHaveLength(3);
+  expect(screen.getAllByTestId("media-skeleton-menu")).toHaveLength(3);
+  expect(screen.queryByTestId("row-skeleton-like")).toBeNull();
 });
 
 describe("LyricsSkeleton", () => {

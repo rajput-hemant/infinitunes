@@ -8,7 +8,7 @@ import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ListRow } from "~/components/list-row";
 import { SectionHeader } from "~/components/section-header";
-import { CONTENT_REVEAL, SongListSkeleton } from "~/components/skeletons";
+import { CONTENT_REVEAL, MediaListSkeleton } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
@@ -90,7 +90,7 @@ function Library() {
             }}
           />
           {isPending ? (
-            <SongListSkeleton rows={3} />
+            <MediaListSkeleton rows={3} menu />
           ) : (
             <Animated.View entering={CONTENT_REVEAL} testID="playlists-reveal">
               {!playlists ? (

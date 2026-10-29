@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 
-/** Let the destination paint its header before mounting secondary content on iOS. */
+/** Let the destination paint its header before mounting secondary content. */
 export function DeferredDetails({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(Platform.OS !== "ios");
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (Platform.OS !== "ios") return;
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => setReady(true));
     });
