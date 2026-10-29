@@ -7,7 +7,7 @@ import {
 import { fireEvent, screen, userEvent } from "@testing-library/react-native";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
-import { Platform, Share, Text } from "react-native";
+import { Platform, Share, StyleSheet, Text } from "react-native";
 
 import {
   DetailScreen,
@@ -157,22 +157,49 @@ describe("DetailScreen", () => {
     beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
     afterEach(() => jest.restoreAllMocks());
 
-    it("tints and titles the bar once the header scrolls under it", async () => {
+    it("lays the page under a transparent bar with a scrim, titled once the header scrolls under", async () => {
       await renderHarness();
       await screen.findByText("Page of Udta Teer");
-      const surface = header().backgroundColor;
       expect(header().title).toBe("");
+      expect(header().backgroundColor).toBe("transparent");
+
+      // The scrim is the bar's background, as tall as the bar; the content
+      // starts that far down.
+      const scrim = screen.getByTestId("bar-scrim");
+      let background = scrim.parent;
+      while (background && !hasHeight(background))
+        background = background.parent;
+      const barHeight = StyleSheet.flatten(background?.props.style).height;
+      expect(barHeight).toBeGreaterThan(0);
+      expect(contentTop()).toBe(barHeight);
 
       await scrollTo(art.header / 2);
       expect(header().title).toBe("");
-
       await scrollTo(art.header + 1);
       expect(header().title).toBe("Udta Teer");
-      expect(header().backgroundColor).not.toBe(surface);
-
       await scrollTo(0);
       expect(header().title).toBe("");
-      expect(header().backgroundColor).toBe(surface);
     });
   });
+
+  it("keeps iOS's bar as it was: no scrim, no top padding", async () => {
+    jest.replaceProperty(Platform, "OS", "ios");
+    await renderHarness();
+    await screen.findByText("Page of Udta Teer");
+
+    expect(screen.queryByTestId("bar-scrim")).toBeNull();
+    expect(contentTop()).toBe(0);
+    jest.restoreAllMocks();
+  });
 });
+
+function hasHeight(node: Node): boolean {
+  return StyleSheet.flatten(node.props.style)?.height !== undefined;
+}
+
+/** The loaded page's scroll content top padding. */
+function contentTop() {
+  let view = screen.getByText("Page of Udta Teer");
+  while (view.type !== "RCTScrollView" && view.parent) view = view.parent;
+  return StyleSheet.flatten(view.props.contentContainerStyle)?.paddingTop;
+}

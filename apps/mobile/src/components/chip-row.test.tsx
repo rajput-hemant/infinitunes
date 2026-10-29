@@ -1,6 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
-import { renderScreen } from "~/test/render";
+import { renderScreen, renderWithProviders } from "~/test/render";
 import { sizes, space } from "~/theme/tokens";
 
 import { ChipRow, revealOffset } from "./chip-row";
@@ -30,6 +31,23 @@ function chipScroller() {
   return node;
 }
 
+/** The chip around a label (its pressable). */
+function chipOf(label: string) {
+  let node = screen.getByText(label).parent;
+  while (node && !node.props.accessibilityRole) node = node.parent;
+  if (!node) throw new Error(`No chip for ${label}`);
+  return node;
+}
+
+/** Whether a chip draws the filter check (these chips have no other symbol). */
+function hasCheck(label: string) {
+  type Node = ReturnType<typeof chipOf>;
+  const drawsCheck = (node: Node | string): boolean =>
+    typeof node !== "string" &&
+    (String(node.type).includes("Symbol") || node.children.some(drawsCheck));
+  return drawsCheck(chipOf(label));
+}
+
 describe("ChipRow", () => {
   const chips = ["All", "Songs", "Albums", "Artists", "Playlists"].map(
     (label, index) => ({
@@ -53,10 +71,10 @@ describe("ChipRow", () => {
   it("places the selected chip once the row and chip are measured", async () => {
     await renderScreen(<ChipRow chips={chips} tabs />);
 
-    fireEvent(chipScroller(), "layout", {
+    await fireEvent(chipScroller(), "layout", {
       nativeEvent: { layout: { x: 0, y: 0, width: 200, height: 48 } },
     });
-    fireEvent(
+    await fireEvent(
       screen.getByRole("tab", { name: "Playlists" }).parent!,
       "layout",
       {
@@ -65,5 +83,27 @@ describe("ChipRow", () => {
     );
 
     expect(screen.getByRole("tab", { name: "Playlists" })).toBeSelected();
+  });
+
+  describe("on Android", () => {
+    beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
+    afterEach(() => jest.restoreAllMocks());
+
+    it("draws assist chips, with no check, when they open something", async () => {
+      await renderWithProviders(<ChipRow chips={chips} />);
+
+      for (const { label } of chips) expect(hasCheck(label)).toBe(false);
+      expect(chipOf("Playlists").props.accessibilityRole).toBe("button");
+      expect(chipOf("Playlists").props.accessibilityState).toEqual({
+        selected: true,
+      });
+    });
+
+    it("keeps the filter check on the selected tab", async () => {
+      await renderWithProviders(<ChipRow chips={chips} tabs />);
+
+      expect(hasCheck("Playlists")).toBe(true);
+      expect(hasCheck("All")).toBe(false);
+    });
   });
 });

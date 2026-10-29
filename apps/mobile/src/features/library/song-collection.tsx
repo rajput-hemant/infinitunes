@@ -3,12 +3,8 @@ import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { Platform, View } from "react-native";
-import {
-  useAnimatedScrollHandler,
-  useSharedValue,
-} from "react-native-reanimated";
+import { useAnimatedScrollHandler } from "react-native-reanimated";
 import ReorderableList from "react-native-reorderable-list";
-import { scheduleOnRN } from "react-native-worklets";
 
 import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
@@ -21,9 +17,8 @@ import { SkeletonBlock } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import {
-  crossesBar,
-  useScrolledBar,
-  useScrolledBarSetter,
+  barScrollProps,
+  useScrolledBarOffset,
 } from "~/navigation/use-scrolled-bar";
 import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
@@ -77,14 +72,13 @@ export function SongCollection({
   onMove,
   header,
 }: SongCollectionProps) {
-  const scrolledBar = useScrolledBar();
-  // ReorderableList composes only Reanimated handlers, so its bar tint runs
-  // from a worklet that crosses to JS on a change alone.
-  const setBarUnder = useScrolledBarSetter();
-  const barUnder = useSharedValue(false);
+  const barOffset = useScrolledBarOffset();
+  const scrolledBar = useMemo(() => barScrollProps(barOffset), [barOffset]);
+  // ReorderableList composes only Reanimated handlers: its worklet feeds the
+  // bar scrim directly.
   const reorderableScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
-      crossesBar(event.contentOffset.y, barUnder, setBarUnder, scheduleOnRN);
+      barOffset?.set(event.contentOffset.y);
     },
   });
   const [query, setQuery] = useState("");

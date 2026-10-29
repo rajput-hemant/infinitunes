@@ -15,7 +15,6 @@ import {
 } from "~/components/entity-list";
 import { SegmentedTabs } from "~/components/segmented-tabs";
 import { PullToRefresh } from "~/components/ui/refresh-control";
-import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
 import type { LabelTab } from "./label-tabs";
@@ -81,7 +80,6 @@ export function LabelContent({ label, onRefresh }: LabelContentProps) {
       refreshControl={<PullToRefresh onRefresh={onRefresh} />}
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
-      contentContainerStyle={{ paddingBottom: playerDockInset }}
     />
   );
 }

@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react-native";
 import { Platform, Text } from "react-native";
 
+import { installedScrimOpacity } from "~/test/bar-scrim";
 import { renderScreen, scrollListTo } from "~/test/render";
-import { colors } from "~/theme/tokens";
 
 import { CatalogScreen } from "./catalog-screen";
 import { CONTENT_CONCEAL } from "./skeletons";
@@ -47,13 +47,11 @@ describe("CatalogScreen", () => {
     expect(screen.queryByTestId("catalog-skeleton")).toBeNull();
   });
 
-  it("tints the Android app bar once the grid scrolls under it", async () => {
+  it("fades the Android bar scrim in once the grid scrolls under it", async () => {
     jest.replaceProperty(Platform, "OS", "android");
     mockSetOptions.mockClear();
     await renderCatalog({ items: ["a", "b"] });
     await scrollListTo("a", 40);
-    expect(mockSetOptions).toHaveBeenCalledWith({
-      headerStyle: { backgroundColor: colors.light.card },
-    });
+    expect(await installedScrimOpacity(mockSetOptions)).toBe(1);
   });
 });

@@ -12,10 +12,12 @@ import {
   ACCENTS,
   ACCENT_IDS,
   androidDynamicColors,
+  androidEmphasizedWeights,
   COLOR_TOKENS,
   colors,
   iosSystemColors,
   swipeFills,
+  typeScale,
 } from "./tokens";
 import type { ColorScheme, ColorToken, Palette } from "./tokens";
 
@@ -200,4 +202,35 @@ describe("swipeFills", () => {
       );
     },
   );
+});
+
+describe("Android ink type scale", () => {
+  const styles = Object.entries(typeScale.android) as [
+    keyof typeof typeScale.android,
+    (typeof typeScale.android)["body"],
+  ][];
+
+  it("never clips a line", () => {
+    for (const [, style] of styles) {
+      expect(style.lineHeight).toBeGreaterThanOrEqual(style.fontSize);
+    }
+  });
+
+  it("sets the headlines bold, tight and loudest", () => {
+    expect(typeScale.android.largeTitle.fontWeight).toBe("700");
+    expect(typeScale.android.title1.fontWeight).toBe("700");
+    expect(typeScale.android.largeTitle.letterSpacing).toBeLessThan(0);
+    expect(typeScale.android.title1.fontSize).toBeGreaterThan(
+      typeScale.android.title2.fontSize,
+    );
+  });
+
+  it("emphasizes a weight up, never below the base", () => {
+    for (const [variant, style] of styles) {
+      const base = Number(style.fontWeight);
+      const emphasized = Number(androidEmphasizedWeights[variant]);
+      expect(emphasized).toBeGreaterThanOrEqual(base);
+      expect(emphasized - base).toBeLessThanOrEqual(200);
+    }
+  });
 });

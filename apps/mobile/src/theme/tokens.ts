@@ -374,7 +374,9 @@ export type TextVariant =
 export type TypeStyle = {
   fontSize: number;
   lineHeight: number;
-  fontWeight: "400" | "500" | "600" | "700";
+  fontWeight: "400" | "500" | "600" | "700" | "800";
+  /** Tracking in points; tight on display sizes, open on small labels. */
+  letterSpacing?: number;
 };
 
 type Weight = TypeStyle["fontWeight"];
@@ -395,41 +397,67 @@ const iosScale: Scale = {
 };
 
 /**
- * The Material 3 type scale: headlineMedium, headlineSmall, titleLarge,
- * titleMedium, bodyLarge, labelLarge, bodyMedium (subhead and footnote),
- * labelMedium. `title2` is titleLarge at its full 22/28, as iOS's Title 2.
+ * Android's "Ink" scale (`docs/design/android-next/direction.md` 2.1): heavy,
+ * tight Roboto for what names a thing (the greeting, an entity's title), the
+ * Material 3 sizes for the rest, open tracking on small labels. Roboto may
+ * draw 600 as 700.
  */
 const androidScale: Scale = {
-  largeTitle: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
-  title1: { fontSize: 24, lineHeight: 32, fontWeight: "400" },
-  title2: { fontSize: 22, lineHeight: 28, fontWeight: "500" },
-  headline: { fontSize: 16, lineHeight: 24, fontWeight: "500" },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
-  label: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
-  subhead: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
-  footnote: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
-  caption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  largeTitle: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "700",
+    letterSpacing: -0.5,
+  },
+  title1: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: "700",
+    letterSpacing: -0.25,
+  },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: "700" },
+  headline: { fontSize: 16, lineHeight: 22, fontWeight: "600" },
+  body: { fontSize: 16, lineHeight: 22, fontWeight: "400" },
+  label: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+  },
+  subhead: { fontSize: 14, lineHeight: 18, fontWeight: "400" },
+  footnote: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "400",
+    letterSpacing: 0.1,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+  },
 };
 
 /**
- * Material 3 Expressive's emphasized styles: the same sizes a weight up, for
- * hierarchy (section and entity titles, the playing title, a selected chip).
- * iOS has none (`Text emphasized` is a no-op there).
+ * Android's emphasized styles: the same sizes a weight up, for hierarchy
+ * (section and entity titles, the playing title, a selected chip).
  */
+export const androidEmphasizedWeights: Record<TextVariant, Weight> = {
+  largeTitle: "800",
+  title1: "800",
+  title2: "700",
+  headline: "700",
+  body: "500",
+  label: "700",
+  subhead: "500",
+  footnote: "500",
+  caption: "700",
+};
+
+/** This platform's emphasized weights; iOS has none (`Text emphasized` is a no-op there). */
 export const emphasizedWeights: Partial<Record<TextVariant, Weight>> =
-  process.env.EXPO_OS === "android"
-    ? {
-        largeTitle: "500",
-        title1: "500",
-        title2: "700",
-        headline: "700",
-        body: "500",
-        label: "700",
-        subhead: "500",
-        footnote: "500",
-        caption: "700",
-      }
-    : {};
+  process.env.EXPO_OS === "android" ? androidEmphasizedWeights : {};
 
 /**
  * One semantic type scale, sized per platform. Both scale with the user's

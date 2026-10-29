@@ -1,7 +1,8 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen } from "@testing-library/react-native";
-import { Platform } from "react-native";
+import { act, fireEvent, screen, within } from "@testing-library/react-native";
+import { Platform, StyleSheet } from "react-native";
+import { getColors } from "react-native-image-colors";
 
 import { pickDownloadFolder } from "~/lib/download";
 import {
@@ -14,8 +15,9 @@ import {
 } from "~/lib/download-store";
 import { tap } from "~/lib/haptics";
 import { renderScreen } from "~/test/render";
-import { translucentFill } from "~/theme/tokens";
+import { colors, sizes, translucentFill } from "~/theme/tokens";
 
+import { findsNoSwatch } from "../../__mocks__/react-native-image-colors";
 import { EntityHeader } from "./entity-header";
 
 jest.mock("~/lib/haptics");
@@ -30,6 +32,7 @@ const IMAGE = "https://c.saavncdn.com/a-500x500.jpg";
 describe("EntityHeader", () => {
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.mocked(getColors).mockImplementation(findsNoSwatch);
     cancelDownloads();
     downloadStore.setState({ queued: {}, active: {}, batch: null });
   });
@@ -131,6 +134,38 @@ describe("EntityHeader", () => {
     expect(onShuffle).toHaveBeenCalledTimes(1);
   });
 
+  it("sets Android's words on the leading edge and ends the row with a large filled Play", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    const onPlay = jest.fn();
+    await renderScreen(
+      <EntityHeader
+        image={IMAGE}
+        title="Album"
+        eyebrow="Album · 2007"
+        onPlay={onPlay}
+        onShuffle={jest.fn()}
+        menu={{ rows }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("header", { name: "Album" }).props.className,
+    ).toContain("text-left");
+    expect(screen.getByText("Album · 2007")).toHaveStyle({
+      textTransform: "uppercase",
+    });
+    const row = within(screen.getByTestId("header-actions"));
+    const buttons = row.getAllByRole("button");
+    const play = row.getByRole("button", { name: "Play" });
+    expect(buttons.at(-1)).toBe(play);
+    expect(play).toHaveStyle({ width: sizes.row, height: sizes.row });
+    // Download waits in the bar's menu until a run starts.
+    expect(row.queryByRole("button", { name: "Download Album" })).toBeNull();
+
+    await fireEvent.press(play);
+    expect(onPlay).toHaveBeenCalledTimes(1);
+  });
+
   it("downloads every song from the Download button", async () => {
     jest.mocked(pickDownloadFolder).mockResolvedValue(null);
     await renderScreen(
@@ -156,6 +191,27 @@ describe("EntityHeader", () => {
 
     expect(screen.queryByLabelText("More actions for Album")).toBeNull();
     expect(screen.queryByRole("button", { name: "Shuffle" })).toBeNull();
+  });
+
+  it("ends Android's wash on the page background the bar scrim fades in", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    jest.mocked(getColors).mockResolvedValue({
+      platform: "ios",
+      background: "#5B0F12",
+      primary: "",
+      secondary: "#F4E9E1",
+      detail: "#000000",
+      quality: "low",
+    });
+    await renderScreen(
+      <EntityHeader image={IMAGE} title="Album" onPlay={jest.fn()} />,
+    );
+
+    const wash = await screen.findByTestId("header-wash");
+    const gradient = String(
+      StyleSheet.flatten(wash.props.style).backgroundImage,
+    );
+    expect(gradient.endsWith(`, ${colors.light.background} 100%)`)).toBe(true);
   });
 
   it("wraps a long title instead of cutting it", async () => {

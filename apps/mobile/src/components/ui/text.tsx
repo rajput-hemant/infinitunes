@@ -34,6 +34,7 @@ const RAMPS = {
 } as const satisfies Record<TextVariant, NativeTextProps["dynamicTypeRamp"]>;
 
 const TABULAR = { fontVariant: ["tabular-nums"] } as const;
+const UPPERCASE = { textTransform: "uppercase" } as const;
 
 export type TextProps = NativeTextProps & {
   /** The role in the type ramp (`body` by default). */
@@ -44,6 +45,11 @@ export type TextProps = NativeTextProps & {
   numeric?: boolean;
   /** Material 3 Expressive's emphasized style (a weight up) on Android; nothing on iOS. */
   emphasized?: boolean;
+  /**
+   * Drawn in capitals (an eyebrow); screen readers keep the text as given,
+   * not spelled out as an acronym.
+   */
+  uppercase?: boolean;
   /**
    * A computed colour that no tone names (text on an artwork-derived wash),
    * e.g. from `useTokenColor`; it replaces `tone`. Prefer `tone`.
@@ -68,6 +74,7 @@ export function Text({
   tone = "default",
   numeric = false,
   emphasized = false,
+  uppercase = false,
   color: explicit,
   className,
   style,
@@ -82,10 +89,16 @@ export function Text({
   return (
     <NativeText
       dynamicTypeRamp={RAMPS[variant]}
+      accessibilityLabel={
+        uppercase && typeof props.children === "string"
+          ? props.children
+          : undefined
+      }
       className={cx(color === undefined && toneClasses[tone], className)}
       style={[
         textStyles[variant],
         numeric && TABULAR,
+        uppercase && UPPERCASE,
         emphasized &&
           emphasizedWeights[variant] && {
             fontWeight: emphasizedWeights[variant],

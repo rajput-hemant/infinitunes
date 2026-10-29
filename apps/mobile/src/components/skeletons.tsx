@@ -11,6 +11,7 @@ import { useUserId } from "~/user-data/session";
 
 import { ENTITY_TITLE_VARIANT } from "./entity-header";
 import { CARD_TITLE } from "./media-card";
+import { sectionTopClass } from "./section-header";
 import { artworkFrame } from "./ui/artwork";
 import { range, SkeletonBlock, SkeletonPulse } from "./ui/skeleton";
 
@@ -128,7 +129,7 @@ export function SongListSkeleton({
 
 function HeaderLine() {
   return (
-    <View className="px-page pb-2 pt-4">
+    <View className={`px-page pb-2 ${sectionTopClass()}`}>
       <SkeletonText variant="title2" width="40%" />
     </View>
   );
@@ -290,15 +291,7 @@ const PLAY_LABEL_WIDTH = 64;
 
 /** A round tonal button of the header's action row. */
 function ActionCircleSkeleton({ testID }: { testID: string }) {
-  return (
-    <SkeletonBlock
-      testID={testID}
-      className={cx(
-        Platform.OS === "android" ? "size-ctl" : "size-touch",
-        "rounded-full",
-      )}
-    />
-  );
+  return <SkeletonBlock testID={testID} className="size-touch rounded-full" />;
 }
 
 type EntityHeaderSkeletonProps = {
@@ -322,10 +315,16 @@ export function EntityHeaderSkeleton({
   meta = true,
 }: EntityHeaderSkeletonProps) {
   const frame = useFrame();
+  const android = Platform.OS === "android";
   return (
     <SkeletonPulse>
-      <View className="w-full max-w-readable items-center self-center px-page pb-6 pt-2">
-        <SkeletonBlock style={frame("header", round)} />
+      <View
+        className={cx(
+          "w-full max-w-readable self-center px-page pb-6 pt-2",
+          android ? "items-start" : "items-center",
+        )}
+      >
+        <SkeletonBlock className="self-center" style={frame("header", round)} />
         <View className="mt-4">
           <SkeletonText variant="caption" width={96} />
         </View>
@@ -334,24 +333,40 @@ export function EntityHeaderSkeleton({
         </View>
         {subtitle ? <SkeletonText variant="subhead" width={140} /> : null}
         {meta ? <SkeletonText variant="footnote" width={180} /> : null}
-        {/* Shuffle, Play and Download, centred: two round buttons around a
-            Play capsule that hugs its icon and label (Android 40dp, iOS 48pt). */}
-        <View className="mt-6 flex-row items-center justify-center gap-3">
-          {shuffle ? (
-            <ActionCircleSkeleton testID="header-skeleton-shuffle" />
-          ) : null}
-          <SkeletonBlock
-            testID="header-skeleton-play"
-            className={cx(
-              Platform.OS === "android" ? "h-ctl" : "h-touch",
-              "rounded-full",
-            )}
-            style={{ width: 2 * space.xxl + PLAY_LABEL_WIDTH }}
-          />
-          {download ? (
-            <ActionCircleSkeleton testID="header-skeleton-download" />
-          ) : null}
-        </View>
+        {android ? (
+          // Android's row: Shuffle (a plain icon) and the 56dp Play at the
+          // trailing edge; Download is in the bar's menu.
+          <View className="mt-4 w-full flex-row items-center justify-end">
+            {shuffle ? (
+              <View className="size-touch items-center justify-center">
+                <SkeletonBlock
+                  testID="header-skeleton-shuffle"
+                  className="size-ctl rounded-full"
+                />
+              </View>
+            ) : null}
+            <SkeletonBlock
+              testID="header-skeleton-play"
+              className="size-row rounded-full"
+            />
+          </View>
+        ) : (
+          // Shuffle, Play and Download, centred: two round buttons around a
+          // Play capsule that hugs its icon and label.
+          <View className="mt-6 flex-row items-center justify-center gap-3">
+            {shuffle ? (
+              <ActionCircleSkeleton testID="header-skeleton-shuffle" />
+            ) : null}
+            <SkeletonBlock
+              testID="header-skeleton-play"
+              className="h-touch rounded-full"
+              style={{ width: 2 * space.xxl + PLAY_LABEL_WIDTH }}
+            />
+            {download ? (
+              <ActionCircleSkeleton testID="header-skeleton-download" />
+            ) : null}
+          </View>
+        )}
       </View>
     </SkeletonPulse>
   );

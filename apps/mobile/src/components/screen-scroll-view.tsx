@@ -1,6 +1,7 @@
 import { ScrollView } from "react-native";
 import type { ScrollViewProps } from "react-native";
 
+import { useBarInset } from "~/components/detail/detail-scroll";
 import { playerDockInset } from "~/navigation/player-dock";
 import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 
@@ -8,19 +9,21 @@ import { useScrolledBar } from "~/navigation/use-scrolled-bar";
  * The scroll container of a tab screen. Automatic insets let the large title
  * collapse and keep content clear of the transparent header and the tab bar;
  * the extra bottom padding clears a floating mini-player. On Android the
- * top bar tints once content scrolls under it (a screen's own `onScroll`,
- * such as a detail page's, takes over).
+ * top bar's scrim fades in as content scrolls under it (a screen's own
+ * `onScroll`, such as a detail page's, takes over), and in a detail page the
+ * content starts below the transparent bar (`useBarInset`).
  */
 export function ScreenScrollView({
   contentContainerStyle,
   ...props
 }: ScrollViewProps) {
   const scrolledBar = useScrolledBar();
+  const barInset = useBarInset();
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={[
-        { paddingBottom: playerDockInset },
+        { paddingTop: barInset, paddingBottom: playerDockInset },
         contentContainerStyle,
       ]}
       {...scrolledBar}

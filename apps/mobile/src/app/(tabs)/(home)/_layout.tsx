@@ -7,9 +7,14 @@ import { useTopLevelHeaderOptions } from "~/navigation/top-level-actions";
 /** A deep link to a shared entity route in this tab keeps Home below it. */
 export const unstable_settings = { anchor: "index" };
 
-/** The title is the greeting ("Good evening, Asha"); the tab itself is still Home. */
+/**
+ * The title is the greeting ("Good evening, Asha"); the tab itself is still
+ * Home. Android draws it in the page (`HomeTitle`), not the bar.
+ */
 export default function HomeLayout() {
-  const headerOptions = useTopLevelHeaderOptions(useHomeGreeting());
+  const headerOptions = useTopLevelHeaderOptions(useHomeGreeting(), {
+    titleInPage: true,
+  });
   return (
     <Stack screenOptions={tabStackOptions}>
       <Stack.Screen name="index" options={headerOptions} />

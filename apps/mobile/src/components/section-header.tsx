@@ -21,14 +21,25 @@ type SectionHeaderProps = {
 };
 
 /**
+ * The space above a section title: 16 on iOS, 24 on Android, where it is
+ * the beat between Home's hero, quick picks and shelves.
+ */
+export function sectionTopClass() {
+  return Platform.OS === "android" ? "pt-6" : "pt-4";
+}
+
+/**
  * The title of every titled group (shelves, quick picks, search groups,
- * library and detail sections): `title2`, 16 above and 8 below, and an
- * optional text action at the end. Sections add no padding of their own.
+ * library and detail sections): `title2`, `sectionTopClass` above and 8
+ * below, and an optional text action at the end. Sections add no padding of
+ * their own.
  */
 export function SectionHeader({ title, action }: SectionHeaderProps) {
   return (
     // The title's line is the header's minimum height.
-    <View className="flex-row items-center justify-between gap-3 px-page pb-2 pt-4">
+    <View
+      className={`flex-row items-center justify-between gap-3 px-page pb-2 ${sectionTopClass()}`}
+    >
       <Text
         variant="title2"
         emphasized

@@ -5,9 +5,9 @@ import { useState } from "react";
 import { Platform, Text, View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
+import { installedScrimOpacity } from "~/test/bar-scrim";
 import { chooseMenuAction, renderStack, scrollListTo } from "~/test/render";
 import { songNamed } from "~/test/user-library";
-import { colors } from "~/theme/tokens";
 
 import { SongCollection } from "./song-collection";
 import * as songOrder from "./song-order";
@@ -17,8 +17,6 @@ jest.mock("expo-router", () => ({
   ...jest.requireActual("expo-router"),
   useNavigation: () => ({ setOptions: mockSetOptions }),
 }));
-
-const tinted = { headerStyle: { backgroundColor: colors.light.card } };
 
 const songs = [
   toSongRow(songNamed("a", "Opening Number")),
@@ -124,12 +122,12 @@ describe("SongCollection app bar", () => {
     mockSetOptions.mockClear();
   });
 
-  it("tints the Android bar as the plain list scrolls under it", async () => {
+  it("fades the Android bar scrim in as the plain list scrolls under it", async () => {
     await renderCollection();
 
     await scrollListTo("Middle Song", 40);
 
-    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
+    expect(await installedScrimOpacity(mockSetOptions)).toBe(1);
   });
 
   it("gives the reorderable list a Reanimated scroll handler", async () => {

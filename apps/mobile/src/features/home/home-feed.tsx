@@ -20,10 +20,11 @@ import { buildHomeModel, isHomeEmpty } from "./home-model";
 import type { HomeModel } from "./home-model";
 import { HomeSkeleton } from "./home-skeleton";
 import { readHomeSnapshot, saveHomeSnapshot } from "./home-snapshot";
+import { HomeTitle } from "./home-title";
 import { QuickPicks } from "./quick-picks";
 
 /**
- * The home feed: greeting and language chips, then the launch data's
+ * The home feed: greeting (in the page on Android) and language chips, then the launch data's
  * featured carousel, quick picks and shelves (trending among them).
  */
 export function HomeFeed() {
@@ -53,6 +54,7 @@ export function HomeFeed() {
   );
   const content = (
     <>
+      <HomeTitle />
       <HomeHeader />
       {home.data ? (
         isHomeEmpty(home.data) ? (

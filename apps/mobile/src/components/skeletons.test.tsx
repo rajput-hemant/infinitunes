@@ -70,6 +70,18 @@ describe("EntityHeaderSkeleton", () => {
     expect(screen.queryByTestId("header-skeleton-menu")).toBeNull();
   });
 
+  it("mirrors Android's row: Shuffle's icon and the 56dp Play at the trailing edge", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(<EntityHeaderSkeleton />);
+    expect(
+      screen.getByTestId("header-skeleton-shuffle").props.className,
+    ).toContain("size-ctl");
+    expect(
+      screen.getByTestId("header-skeleton-play").props.className,
+    ).toContain("size-row");
+    expect(screen.queryByTestId("header-skeleton-download")).toBeNull();
+  });
+
   it("leaves out the buttons the loaded header will not have", async () => {
     await renderScreen(
       <EntityHeaderSkeleton download={false} shuffle={false} />,

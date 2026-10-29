@@ -2,6 +2,7 @@ import { useState } from "react";
 import { RefreshControl } from "react-native";
 import type { RefreshControlProps } from "react-native";
 
+import { useBarInset } from "~/components/detail/detail-scroll";
 import { reportFailure } from "~/lib/failure";
 import { tap } from "~/lib/haptics";
 import { usePalette } from "~/theme/use-palette";
@@ -26,6 +27,8 @@ type PullToRefreshProps = Omit<
  */
 export function PullToRefresh({ onRefresh, ...props }: PullToRefreshProps) {
   const palette = usePalette();
+  // Android draws the spinner from the list's top edge, under a transparent bar.
+  const barInset = useBarInset();
   const [refreshing, setRefreshing] = useState(false);
 
   async function refresh() {
@@ -45,6 +48,7 @@ export function PullToRefresh({ onRefresh, ...props }: PullToRefreshProps) {
       onRefresh={() => void refresh()}
       colors={[palette.primary]}
       progressBackgroundColor={palette.card}
+      progressViewOffset={props.progressViewOffset ?? (barInset || undefined)}
     />
   );
 }

@@ -42,4 +42,20 @@ describe("Text", () => {
       fontVariant: ["tabular-nums"],
     });
   });
+
+  it("carries the variant's tracking", async () => {
+    jest.replaceProperty(textStyles, "caption", typeScale.android.caption);
+    await render(<Text variant="caption">Album · 2007</Text>);
+    expect(screen.getByText("Album · 2007")).toHaveStyle({
+      letterSpacing: typeScale.android.caption.letterSpacing,
+    });
+    jest.restoreAllMocks();
+  });
+
+  it("draws an eyebrow in capitals and reads the text as given", async () => {
+    await render(<Text uppercase>Album · 2007</Text>);
+    const text = screen.getByText("Album · 2007");
+    expect(text).toHaveStyle({ textTransform: "uppercase" });
+    expect(text).toHaveProp("accessibilityLabel", "Album · 2007");
+  });
 });
