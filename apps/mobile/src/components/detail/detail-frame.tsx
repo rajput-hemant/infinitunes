@@ -4,9 +4,10 @@ import { Stack } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import Animated, { useSharedValue } from "react-native-reanimated";
 
+import { DeferredDetails } from "~/components/deferred-details";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { CONTENT_REVEAL } from "~/components/skeletons";
@@ -72,7 +73,13 @@ export function DetailFrame<Data>({
             )}
           />
           <Animated.View entering={CONTENT_REVEAL} className="flex-1">
-            {children(data)}
+            {Platform.OS === "android" ? (
+              <DeferredDetails fallback={skeleton}>
+                <LoadedDetail data={data} render={children} />
+              </DeferredDetails>
+            ) : (
+              children(data)
+            )}
           </Animated.View>
         </DetailMenuContext>
       ) : (
@@ -89,6 +96,17 @@ export function DetailFrame<Data>({
       )}
     </DetailScrollContext>
   );
+}
+
+/** Cached data must not mount the list and derive its wash before the native push commits. */
+function LoadedDetail<Data>({
+  data,
+  render,
+}: {
+  data: Data;
+  render: (data: Data) => ReactNode;
+}) {
+  return render(data);
 }
 
 /** Not found or failed, clear of Android's transparent bar. */
