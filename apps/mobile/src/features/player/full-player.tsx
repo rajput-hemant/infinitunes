@@ -1,7 +1,12 @@
 import type { Queue } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter, useTheme } from "expo-router";
+import {
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+  useTheme,
+} from "expo-router";
 import {
   useCallback,
   useEffect,
@@ -700,13 +705,27 @@ export function FullPlayer() {
 
   // The drag down to close, shared by the areas outside the lists.
   const drag = useSharedValue(0);
+  const dragFade = useSharedValue(1);
   const dragStyle = useAnimatedStyle(() => ({
+    opacity: dragFade.get(),
     transform: [{ translateY: drag.get() }],
   }));
-  const topPan = useDismissPan(drag, height, close);
-  const bottomPan = useDismissPan(drag, height, close);
-  const headerPan = useDismissPan(drag, height, close);
-  const compactPan = useDismissPan(drag, height, close);
+  // The drag already took the page off the screen: pop without the native
+  // slide, which would start over from the top. The pop waits for the
+  // options' own commit, else the screen is gone before it sees `none`.
+  const navigation = useNavigation();
+  const [dragged, setDragged] = useState(false);
+  const draggedAway = () => {
+    navigation.setOptions({ animation: "none" });
+    setDragged(true);
+  };
+  useEffect(() => {
+    if (dragged) router.back();
+  }, [dragged, router]);
+  const topPan = useDismissPan(drag, dragFade, height, draggedAway);
+  const bottomPan = useDismissPan(drag, dragFade, height, draggedAway);
+  const headerPan = useDismissPan(drag, dragFade, height, draggedAway);
+  const compactPan = useDismissPan(drag, dragFade, height, draggedAway);
 
   // The sideways swipe that changes the song, on the artwork and the title.
   const swipeX = useSharedValue(0);
