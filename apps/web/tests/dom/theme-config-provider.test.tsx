@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it, mock, spyOn } from "bun:test";
 
 import { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -49,6 +49,43 @@ describe("ThemeConfigProvider", () => {
     );
     await act(async () => root.unmount());
     document.cookie = "theme-config=; path=/; max-age=0";
+  });
+
+  it("does not rewrite the theme or save an unchanged patch", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    document.cookie = `theme-config=${encodeURIComponent(serializeThemeCookie({ ...DEFAULT_THEME_CONFIG, radius: 0.5 }))}; path=/`;
+    const render = () =>
+      root.render(
+        <ThemeConfigProvider>
+          <Probe />
+        </ThemeConfigProvider>,
+      );
+    await act(async () => {
+      render();
+    });
+    const writes = spyOn(document.documentElement.style, "setProperty");
+    const savesBefore = saved.length;
+    try {
+      await act(async () => {
+        render();
+      });
+      await act(async () => {
+        api().update({ radius: api().config.radius });
+      });
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 400));
+      });
+      expect(writes).not.toHaveBeenCalled();
+      expect(saved).toHaveLength(savesBefore);
+      expect(api().changed).toBe(false);
+    } finally {
+      writes.mockRestore();
+      await act(async () => root.unmount());
+      container.remove();
+      document.cookie = "theme-config=; path=/; max-age=0";
+    }
   });
 
   it("applies instantly, debounces the save, resets", async () => {

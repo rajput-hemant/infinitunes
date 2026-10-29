@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 
 import {
   DENSITIES,
@@ -347,9 +347,11 @@ function fakeTarget() {
   const attributes = new Map<string, string>();
   const properties = new Map<string, string>();
   const target: ThemeTarget = {
+    getAttribute: (name) => attributes.get(name) ?? null,
     setAttribute: (name, value) => void attributes.set(name, value),
     removeAttribute: (name) => void attributes.delete(name),
     style: {
+      getPropertyValue: (name) => properties.get(name) ?? "",
       setProperty: (name, value) => void properties.set(name, value),
       removeProperty: (name) => {
         const previous = properties.get(name) ?? "";
@@ -368,6 +370,22 @@ describe("applyThemeConfig", () => {
     const { attributes: expected, style } = themeConfigToHtml(everyField);
     expect(Object.fromEntries(attributes)).toEqual(expected);
     expect(Object.fromEntries(properties)).toEqual(style);
+  });
+
+  test("only writes changed attributes and variables", () => {
+    const { target } = fakeTarget();
+    applyThemeConfig(target, everyField);
+    const attributeWrites = spyOn(target, "setAttribute");
+    const styleWrites = spyOn(target.style, "setProperty");
+    const styleRemovals = spyOn(target.style, "removeProperty");
+    applyThemeConfig(target, everyField);
+    expect(attributeWrites).not.toHaveBeenCalled();
+    expect(styleWrites).not.toHaveBeenCalled();
+    expect(styleRemovals).not.toHaveBeenCalled();
+    applyThemeConfig(target, { ...everyField, radius: 0.2 });
+    expect(attributeWrites).not.toHaveBeenCalled();
+    expect(styleWrites.mock.calls).toEqual([["--radius", "0.2rem"]]);
+    expect(styleRemovals).not.toHaveBeenCalled();
   });
 
   test("a reset clears every property it set before", () => {

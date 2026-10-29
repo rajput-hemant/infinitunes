@@ -1,3 +1,5 @@
+import { getImageSrc } from "@infinitunes/types";
+
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { cn } from "~/lib/utils";
@@ -26,9 +28,9 @@ export function ImageCollage({ src }: ImageCollageProps) {
           )}
         >
           <ImageWithFallback
-            src={image}
+            src={getImageSrc(image, count === 1 ? "high" : "medium")}
             fill
-            sizes="(min-width: 1280px) 256px, (min-width: 768px) 224px, 176px"
+            sizes="auto, (min-width: 1280px) 256px, (min-width: 768px) 224px, 176px"
             alt="Song cover"
             fallback={getPlaceholderSrc("song")}
             className={cn(

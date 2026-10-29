@@ -61,8 +61,10 @@ describe("loading skeletons share the real layout", () => {
     );
 
     expect(album).toContain(detailBandClassName.split(" ")[0]);
-    expect(album).not.toContain("rounded-full");
-    expect(artist).toContain("rounded-full");
+    const artClass = (html: string) =>
+      html.match(/class="([^"]*aspect-square[^"]*)"/)?.[1];
+    expect(artClass(album)).not.toContain("rounded-full");
+    expect(artClass(artist)).toContain("rounded-full");
   });
 
   it("renders the requested number of song rows", () => {

@@ -149,7 +149,11 @@ export function ExpandedBody({
             src={getImageSrc(track.image, "high")}
             alt=""
             fill
-            sizes="(min-width: 768px) 480px, 352px"
+            sizes={
+              showPane
+                ? "(min-width: 1248px) 480px, (min-width: 768px) calc((100vw - 144px) / 2), 64px"
+                : "(min-width: 1248px) 480px, (min-width: 768px) calc((100vw - 144px) / 2), min(352px, calc(100vw - 48px))"
+            }
             fallback="/images/placeholder/song.jpg"
           />
           <Skeleton className="absolute inset-0 -z-10" />

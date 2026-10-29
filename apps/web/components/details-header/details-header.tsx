@@ -77,6 +77,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           src={getImageSrc(item.image, "high")}
           width={224}
           height={224}
+          sizes="(min-width: 1440px) 224px, (min-width: 1024px) 176px, (min-width: 768px) 144px, min(60vw, 224px)"
           alt={title}
           fallback={getPlaceholderSrc(kind)}
           loading="eager"

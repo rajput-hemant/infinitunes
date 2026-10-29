@@ -69,9 +69,11 @@ export function themeConfigToHtml(config: ThemeConfig): ThemeHtml {
 
 /** The slice of `HTMLElement` the applier needs, so it runs against a fake in tests. */
 export type ThemeTarget = {
+  getAttribute(name: string): string | null;
   setAttribute(name: string, value: string): void;
   removeAttribute(name: string): void;
   style: {
+    getPropertyValue(name: string): string;
     setProperty(name: string, value: string): void;
     removeProperty(name: string): string;
   };
@@ -81,24 +83,18 @@ export type ThemeTarget = {
 export function applyThemeConfig(target: ThemeTarget, config: ThemeConfig) {
   const { attributes, style } = themeConfigToHtml(config);
 
-  // Set required attributes
-  target.setAttribute("data-density", attributes["data-density"]);
-  target.setAttribute("data-glass-level", attributes["data-glass-level"]);
-  // Cookies written before the rename carry `data-glass`; on `<html>` it would
-  // read as a glass surface, so drop it.
-  target.removeAttribute("data-glass");
-  target.setAttribute("data-motion", attributes["data-motion"]);
-  target.setAttribute("data-font", attributes["data-font"]);
-  target.setAttribute("data-heading-font", attributes["data-heading-font"]);
-
-  if (attributes["data-glass-tint"]) {
-    target.setAttribute("data-glass-tint", attributes["data-glass-tint"]);
-  } else {
-    target.removeAttribute("data-glass-tint");
+  for (const [name, value] of Object.entries(attributes)) {
+    if (target.getAttribute(name) !== value) target.setAttribute(name, value);
+  }
+  // Old cookies called the level data-glass, which now marks a surface.
+  for (const name of ["data-glass", "data-glass-tint"]) {
+    if (!(name in attributes) && target.getAttribute(name) !== null)
+      target.removeAttribute(name);
   }
 
   for (const name of MANAGED_VARIABLES) {
     const value = style[name];
+    if (target.style.getPropertyValue(name) === (value ?? "")) continue;
     if (value === undefined) target.style.removeProperty(name);
     else target.style.setProperty(name, value);
   }

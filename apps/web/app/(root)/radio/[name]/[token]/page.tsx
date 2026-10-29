@@ -53,6 +53,7 @@ export default async function RadioStationPage({
             src={getImageSrc(station.image, "high")}
             width={200}
             height={200}
+            sizes="(min-width: 1280px) 256px, (min-width: 768px) 224px, 176px"
             alt=""
             fallback={getPlaceholderSrc("radio_station")}
             loading="eager"

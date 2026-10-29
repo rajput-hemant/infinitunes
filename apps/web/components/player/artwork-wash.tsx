@@ -13,7 +13,7 @@ export function ArtworkWash({ image }: ArtworkWashProps) {
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
       <ImageWithFallback
-        src={getImageSrc(image, "high")}
+        src={getImageSrc(image, "medium")}
         alt=""
         fill
         sizes="100vw"

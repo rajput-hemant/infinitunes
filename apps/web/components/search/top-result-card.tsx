@@ -44,7 +44,7 @@ export function TopResultCard({ item }: TopResultCardProps) {
       </div>
 
       <div className="min-w-0">
-        <h3 className="font-heading text-xl leading-7 font-bold tracking-tight">
+        <h3 className="truncate font-heading text-xl leading-7 font-bold tracking-tight">
           <Link
             href={getSearchItemHref(item)}
             className="rounded-sm outline-hidden after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring"
@@ -53,7 +53,9 @@ export function TopResultCard({ item }: TopResultCardProps) {
           </Link>
         </h3>
         {subtitle ? (
-          <p className="text-muted-foreground">{decode(subtitle)}</p>
+          <p className="truncate text-sm leading-5 text-muted-foreground">
+            {decode(subtitle)}
+          </p>
         ) : null}
       </div>
 
