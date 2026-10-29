@@ -20,7 +20,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import { Icon } from "~/components/ui/icon";
 import { commit as commitHaptic } from "~/lib/haptics";
 import { springs } from "~/theme/motion";
-import { sizes, space, swipeFills, swipeGlyph } from "~/theme/tokens";
+import { iconSize, sizes, space, swipeFills, swipeGlyph } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
 export type SwipeAction = {
@@ -112,10 +112,12 @@ function sampleVelocity(
 
 /**
  * Where a button sits and how wide it is, from the pane's revealed width `reveal`
- * and `stretch` (0 at rest, 1 past the commit point). The buttons share the pane
- * in equal parts, their edges moving with the row (sticky); distances are from
- * the screen edge the pane opens from. Index 0 is the primary (next to the row):
- * once stretched it takes the whole pane while the others fade. `fade` is
+ * and `stretch` (0 at rest, 1 past the commit point); distances are from the
+ * screen edge the pane opens from. Index 0 is the primary (next to the row).
+ * Until the pane is fully open the buttons arrive one at a time (Apple Music):
+ * the primary grows to its resting width first, then the next one emerges from
+ * behind it. Past the open width they share the pane in equal parts; once
+ * stretched the primary takes the whole pane while the others fade. `fade` is
  * `stretch` unless reduced motion keeps the fade without the growth.
  */
 export function capsuleLayout(
@@ -126,6 +128,21 @@ export function capsuleLayout(
   fade: number = stretch,
 ): { edge: number; width: number; opacity: number } {
   "worklet";
+  if (reveal < openWidth(count)) {
+    // The inner side of button `index`: the row's edge less the buttons before it.
+    let inner = reveal - GAP;
+    let width = 0;
+    for (let i = 0; i <= index; i++) {
+      width = Math.min(BUTTON, Math.max(0, inner - GAP));
+      if (i < index) inner -= width + GAP;
+    }
+    const shown = Math.min(1, width / (BUTTON / 2));
+    return {
+      edge: inner - width,
+      width,
+      opacity: index > 0 ? shown * (1 - fade) : shown,
+    };
+  }
   const share = Math.max(0, (reveal - (count + 1) * GAP) / count);
   const edge = GAP + (count - 1 - index) * (share + GAP);
   if (index > 0) return { edge, width: share, opacity: 1 - fade };
@@ -168,6 +185,19 @@ function Capsule({
       ? { left: edge, width, opacity }
       : { right: edge, width, opacity };
   });
+  // The glyph appears only once its capsule has room around it.
+  const glyphStyle = useAnimatedStyle(() => {
+    const { width } = capsuleLayout(
+      reveal.value,
+      stretch?.value ?? 0,
+      index,
+      count,
+      fade?.value ?? 0,
+    );
+    return {
+      opacity: Math.min(1, Math.max(0, (width - iconSize.md - GAP) / GAP)),
+    };
+  });
   return (
     <Animated.View
       style={[
@@ -178,6 +208,8 @@ function Capsule({
           bottom: INSET,
           borderRadius: sizes.row,
           backgroundColor: swipeFills[action.tone],
+          // A narrow capsule never shows its glyph past its own edges.
+          overflow: "hidden",
         },
       ]}
     >
@@ -190,7 +222,9 @@ function Capsule({
         style={StyleSheet.absoluteFill}
         className="items-center justify-center"
       >
-        <Icon name={action.icon} size="md" color={swipeGlyph} />
+        <Animated.View style={glyphStyle}>
+          <Icon name={action.icon} size="md" color={swipeGlyph} />
+        </Animated.View>
       </Pressable>
     </Animated.View>
   );

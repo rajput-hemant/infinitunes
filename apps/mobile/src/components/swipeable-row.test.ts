@@ -136,6 +136,19 @@ describe("capsuleLayout", () => {
     expect(wider.width).toBe((300 - 3 * GAP) / 2);
   });
 
+  it("reveals the primary alone first, then the next one behind it", () => {
+    const one = openWidth(1);
+    // Just the primary's resting width: the other has not appeared yet.
+    const primary = capsuleLayout(one, 0, 0, 2);
+    expect(primary.edge + primary.width + GAP).toBe(one);
+    expect(primary.width).toBe(capsuleLayout(open, 0, 0, 2).width);
+    expect(capsuleLayout(one, 0, 1, 2)).toMatchObject({ width: 0, opacity: 0 });
+    // Halfway to fully open, the second is emerging at the screen edge.
+    const emerging = capsuleLayout((one + open) / 2, 0, 1, 2);
+    expect(emerging.width).toBeGreaterThan(0);
+    expect(emerging.edge).toBe(GAP);
+  });
+
   it("keeps the fade without the growth under reduced motion", () => {
     expect(capsuleLayout(300, 0, 0, 2, 1).width).toBe((300 - 3 * GAP) / 2);
     expect(capsuleLayout(300, 0, 1, 2, 1).opacity).toBe(0);
