@@ -18,6 +18,7 @@ import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
 import { IconButton } from "./ui/icon-button";
 import { Text } from "./ui/text";
+import { WashStatusBar } from "./wash-status-bar";
 
 /** iOS lifts the header art off the page, as Apple Music does; Material 3 is flat. */
 const ART_SHADOW = Platform.select({
@@ -109,6 +110,7 @@ export function EntityHeader({
   return (
     <OnWash colors={colors ? nowPlayingWash(colors) : null}>
       <View className="w-full">
+        <WashStatusBar color={wash} />
         {wash ? (
           <View
             pointerEvents="none"
