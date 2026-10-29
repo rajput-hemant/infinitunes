@@ -78,7 +78,16 @@ async function SongLyrics({ id }: SongLyricsProps) {
         copyright: lyrics.copyright,
       }}
     />
-  ) : null;
+  ) : (
+    <section className="flex flex-col gap-4">
+      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+        Lyrics
+      </h2>
+      <p className="text-sm text-muted-foreground">
+        Lyrics aren't available for this song.
+      </p>
+    </section>
+  );
 }
 
 async function SongAlbumSongs({ token }: TokenProps) {
@@ -184,9 +193,11 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
     <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={song} />
 
-      <Suspense fallback={<Skeleton className="h-24" />}>
-        <SongLyrics id={song.id} />
-      </Suspense>
+      <div className="min-h-48">
+        <Suspense fallback={<Skeleton className="h-48" />}>
+          <SongLyrics id={song.id} />
+        </Suspense>
+      </div>
 
       <Suspense
         fallback={
