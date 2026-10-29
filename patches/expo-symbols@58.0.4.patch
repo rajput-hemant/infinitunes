@@ -1,0 +1,39 @@
+--- a/node_modules/expo-symbols/src/SymbolView.tsx
++++ b/node_modules/expo-symbols/src/SymbolView.tsx
+@@ -1,4 +1,4 @@
+-import { loadAsync, type FontSource } from 'expo-font';
++import { isLoaded, loadAsync, type FontSource } from 'expo-font';
+ import { useState, useEffect, useMemo, type JSX } from 'react';
+ import { Platform, PlatformColor, Text, View } from 'react-native';
+ 
+@@ -27,8 +27,9 @@
+   const font = useMemo(() => getFont(weight), [weight]);
+   const name =
+     typeof nameProp === 'object' ? nameProp[Platform.OS === 'android' ? 'android' : 'web'] : null;
+-  const [loaded, setLoaded] = useState(false);
++  const [loaded, setLoaded] = useState(() => isLoaded(font.name));
+   useEffect(() => {
++    if (loaded) return;
+     loadAsync({
+       [font.name]: {
+         uri: font.font,
+--- a/node_modules/expo-symbols/build/SymbolView.js
++++ b/node_modules/expo-symbols/build/SymbolView.js
+@@ -1,5 +1,5 @@
+ import { jsx as _jsx, Fragment as _Fragment } from "react/jsx-runtime";
+-import { loadAsync } from 'expo-font';
++import { isLoaded, loadAsync } from 'expo-font';
+ import { useState, useEffect, useMemo } from 'react';
+ import { Platform, PlatformColor, Text, View } from 'react-native';
+ import { androidSymbolToString } from './android';
+@@ -11,8 +11,9 @@
+         weight
+     ]);
+     const name = typeof nameProp === 'object' ? nameProp[Platform.OS === 'android' ? 'android' : 'web'] : null;
+-    const [loaded, setLoaded] = useState(false);
++    const [loaded, setLoaded] = useState(() => isLoaded(font.name));
+     useEffect(()=>{
++        if (loaded) return;
+         loadAsync({
+             [font.name]: {
+                 uri: font.font

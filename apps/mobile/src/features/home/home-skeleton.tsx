@@ -64,7 +64,7 @@ function HeroSkeleton() {
 }
 
 /** Quick-pick tiles as `QuickPickTile` draws them: the tile surface, the art and a title line. */
-function QuickPicksSkeleton() {
+export function QuickPicksSkeleton() {
   const { width } = useGrid("picks");
   const scale = useRadii();
   return (

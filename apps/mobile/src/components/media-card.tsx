@@ -1,5 +1,6 @@
 import type { CardItem, MediaType } from "@infinitunes/types";
 import { isExplicit } from "@infinitunes/types";
+import { memo } from "react";
 import { Platform, Pressable, View } from "react-native";
 import Animated from "react-native-reanimated";
 
@@ -69,7 +70,7 @@ type MediaCardProps = {
  * Play Next and Add to Queue; only the hero variant shows a Play button, a
  * sibling of the link so screen readers reach both.
  */
-export function MediaCard({
+export const MediaCard = memo(function MediaCard({
   item,
   width,
   variant = "card",
@@ -196,4 +197,4 @@ export function MediaCard({
       ) : null}
     </View>
   );
-}
+});

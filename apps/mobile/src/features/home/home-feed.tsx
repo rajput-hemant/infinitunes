@@ -1,5 +1,7 @@
+import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
+import { Platform } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
@@ -10,6 +12,8 @@ import { CONTENT_REVEAL } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
+import { playerDockInset } from "~/navigation/player-dock";
+import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 
 import { HomeHeader } from "./home-header";
 import { buildHomeModel, isHomeEmpty } from "./home-model";
@@ -41,10 +45,14 @@ export function HomeFeed() {
     if (data) saveHomeSnapshot(lang, data, dataUpdatedAt);
   }, [queryClient, lang, options.queryKey, dataUpdatedAt]);
 
-  return (
-    <ScreenScrollView
-      refreshControl={<PullToRefresh onRefresh={home.refetch} />}
-    >
+  const scrolledBar = useScrolledBar();
+  const loaded = home.data && !isHomeEmpty(home.data);
+  const renderShelf = useCallback(
+    ({ item }: { item: HomeModel["shelves"][number] }) => <Shelf {...item} />,
+    [],
+  );
+  const content = (
+    <>
       <HomeHeader />
       {home.data ? (
         isHomeEmpty(home.data) ? (
@@ -56,7 +64,10 @@ export function HomeFeed() {
           />
         ) : (
           <Animated.View entering={CONTENT_REVEAL}>
-            <HomeSections model={home.data} />
+            <HomeSections
+              model={home.data}
+              shelves={Platform.OS !== "android"}
+            />
           </Animated.View>
         )
       ) : home.error ? (
@@ -64,11 +75,41 @@ export function HomeFeed() {
       ) : (
         <HomeSkeleton />
       )}
+    </>
+  );
+  if (Platform.OS === "android") {
+    return (
+      <FlashList
+        testID="home-feed"
+        data={loaded && home.data ? home.data.shelves : []}
+        keyExtractor={shelfKey}
+        renderItem={renderShelf}
+        ListHeaderComponent={content}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: playerDockInset }}
+        refreshControl={<PullToRefresh onRefresh={home.refetch} />}
+        {...scrolledBar}
+      />
+    );
+  }
+  return (
+    <ScreenScrollView
+      refreshControl={<PullToRefresh onRefresh={home.refetch} />}
+    >
+      {content}
     </ScreenScrollView>
   );
 }
 
-function HomeSections({ model }: { model: HomeModel }) {
+const shelfKey = (shelf: HomeModel["shelves"][number]) => shelf.key;
+
+function HomeSections({
+  model,
+  shelves,
+}: {
+  model: HomeModel;
+  shelves: boolean;
+}) {
   const eyebrow = useCallback(
     (item: { id: string }) => model.eyebrows[item.id],
     [model.eyebrows],
@@ -77,9 +118,10 @@ function HomeSections({ model }: { model: HomeModel }) {
     <>
       <Shelf variant="hero" items={model.carousel} eyebrow={eyebrow} />
       <QuickPicks items={model.quickPicks} />
-      {model.shelves.map(({ key, ...shelf }) => (
-        <Shelf key={key} {...shelf} />
-      ))}
+      {shelves &&
+        model.shelves.map(({ key, ...shelf }) => (
+          <Shelf key={key} {...shelf} />
+        ))}
     </>
   );
 }

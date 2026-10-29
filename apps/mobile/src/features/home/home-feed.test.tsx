@@ -6,6 +6,7 @@ import {
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
@@ -217,4 +218,13 @@ describe("HomeFeed", () => {
     expect(app.getPathname()).toBe("/album");
     expect(app.getSearchParams()).toEqual({ lang: "tamil" });
   });
+});
+
+it("keeps Android Home in its virtualized container while the feed loads", async () => {
+  jest.replaceProperty(Platform, "OS", "android");
+  home.mockReturnValue(new Promise(() => {}));
+  await renderScreen(<HomeFeed />);
+  expect(screen.getByTestId("home-feed")).toBeOnTheScreen();
+  expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
+  expect(screen.queryByText("Trending Now")).toBeNull();
 });

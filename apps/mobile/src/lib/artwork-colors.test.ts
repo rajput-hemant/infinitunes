@@ -309,3 +309,11 @@ describe("seedFromImageColors", () => {
     ).toBeNull();
   });
 });
+
+it("reuses the same palette across dock and player mounts, with scheme and platform separation", () => {
+  const android = playerColorsFromSeed("#5B0F12", "light", "android");
+  expect(android).not.toBeNull();
+  expect(playerColorsFromSeed("#5B0F12", "light", "android")).toBe(android);
+  expect(playerColorsFromSeed("#5B0F12", "dark", "android")).not.toBe(android);
+  expect(playerColorsFromSeed("#5B0F12", "light", "ios")).not.toBe(android);
+});

@@ -2,14 +2,15 @@ import { uniqueBy } from "@infinitunes/types";
 import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { Href } from "expo-router";
-import { memo, useCallback, useMemo } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { memo, useCallback, useMemo, useState } from "react";
+import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { art, playerArtSize, sizes, space } from "~/theme/tokens";
 
 import { MediaCard } from "./media-card";
 import type { MediaCardVariant } from "./media-card";
 import { SectionHeader } from "./section-header";
+import { ShelfSkeleton } from "./skeletons";
 
 type ShelfProps = {
   /** The section's header; leave out for an untitled row (home's featured carousel). */
@@ -60,6 +61,9 @@ export const Shelf = memo(function Shelf({
   eyebrow,
 }: ShelfProps) {
   const heroWidth = useHeroWidth();
+  const [ready, setReady] = useState(false);
+  const pending =
+    Platform.OS === "android" && !!title && variant === "card" && !ready;
   // Upstream modules can repeat an item; FlashList needs unique keys.
   const unique = useMemo(() => uniqueBy(items, (item) => item.id), [items]);
   const hero = variant === "hero";
@@ -79,32 +83,41 @@ export const Shelf = memo(function Shelf({
 
   return (
     <View>
-      {title ? (
-        <SectionHeader
-          title={title}
-          action={
-            seeAllHref
-              ? {
-                  label: "See All",
-                  href: seeAllHref,
-                  accessibilityLabel: `See all ${title}`,
-                }
-              : undefined
-          }
+      {pending ? <ShelfSkeleton /> : null}
+      <View
+        style={pending ? [StyleSheet.absoluteFill, { opacity: 0 }] : undefined}
+        accessibilityElementsHidden={pending}
+        importantForAccessibility={pending ? "no-hide-descendants" : "auto"}
+        pointerEvents={pending ? "none" : "auto"}
+      >
+        {title ? (
+          <SectionHeader
+            title={title}
+            action={
+              seeAllHref
+                ? {
+                    label: "See All",
+                    href: seeAllHref,
+                    accessibilityLabel: `See all ${title}`,
+                  }
+                : undefined
+            }
+          />
+        ) : null}
+        <FlashList
+          horizontal
+          onLoad={Platform.OS === "android" ? () => setReady(true) : undefined}
+          data={unique}
+          keyExtractor={cardKey}
+          renderItem={renderItem}
+          ItemSeparatorComponent={CardGap}
+          showsHorizontalScrollIndicator={false}
+          // The hero carousel settles one card at a time, its start on the gutter.
+          snapToInterval={hero ? heroWidth + space.md : undefined}
+          decelerationRate={hero ? "fast" : undefined}
+          contentContainerStyle={{ paddingHorizontal: sizes.page }}
         />
-      ) : null}
-      <FlashList
-        horizontal
-        data={unique}
-        keyExtractor={cardKey}
-        renderItem={renderItem}
-        ItemSeparatorComponent={CardGap}
-        showsHorizontalScrollIndicator={false}
-        // The hero carousel settles one card at a time, its start on the gutter.
-        snapToInterval={hero ? heroWidth + space.md : undefined}
-        decelerationRate={hero ? "fast" : undefined}
-        contentContainerStyle={{ paddingHorizontal: sizes.page }}
-      />
+      </View>
     </View>
   );
 });

@@ -1,7 +1,7 @@
 import type { SongRowItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { ListRenderItem } from "@shopify/flash-list";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
@@ -32,7 +32,11 @@ type TrackRowProps = {
 };
 
 /** One track; pressing it plays the whole list from there. */
-function TrackRow({ rows, index, numbered }: TrackRowProps) {
+const TrackRow = memo(function TrackRow({
+  rows,
+  index,
+  numbered,
+}: TrackRowProps) {
   return (
     <SongRow
       song={rows[index]}
@@ -41,7 +45,7 @@ function TrackRow({ rows, index, numbered }: TrackRowProps) {
       index={index + 1}
     />
   );
-}
+});
 
 // The same song can sit twice in one playlist, so the id alone is not a key.
 function trackKey(row: SongRowItem, index: number) {
