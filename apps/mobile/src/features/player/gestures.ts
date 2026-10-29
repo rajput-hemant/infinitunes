@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { Platform } from "react-native";
 import { usePanGesture } from "react-native-gesture-handler";
 import {
+  Easing,
   ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
@@ -46,6 +46,21 @@ export function shouldDismiss(
   "worklet";
   if (translation <= 0) return false;
   return translation > height * DISMISS_SHARE || velocity > FLICK_VELOCITY;
+}
+
+/** Bounds of the page's flight off the screen after a drag that closes it. */
+const LEAVE_MIN_MS = 150;
+const LEAVE_MAX_MS = 350;
+
+/**
+ * How long the page takes to cover the `remaining` points off the screen
+ * when it leaves at `velocity`: an ease-out from that speed (its start speed
+ * is twice the average), so it carries on as fast as the finger let go.
+ */
+export function leaveDuration(remaining: number, velocity: number): number {
+  "worklet";
+  const ms = velocity > 0 ? (2000 * remaining) / velocity : LEAVE_MAX_MS;
+  return Math.min(Math.max(ms, LEAVE_MIN_MS), LEAVE_MAX_MS);
 }
 
 /** Which ways the queue can move from the current entry. */
@@ -129,13 +144,22 @@ export const songSwipeActions = {
 /**
  * Drag down to close: follows the finger into `offset`, then closes past a
  * fifth of the screen or on a flick, else springs back. Sideways movement
- * fails it, so the song swipe and the slider keep theirs.
+ * fails it, so the song swipe and the slider keep theirs. Closing is one
+ * motion on the UI thread: the page carries on down from the finger at its
+ * speed (under reduce motion it fades out in place, `fade`) and only then
+ * `onDismissed` pops the route, which must not animate again.
  */
 export function useDismissPan(
   offset: SharedValue<number>,
+  fade: SharedValue<number>,
   height: number,
-  onDismiss: () => void,
+  onDismissed: () => void,
 ) {
+  const reduceMotion = useReducedMotion();
+  const done = (finished?: boolean) => {
+    "worklet";
+    if (finished) scheduleOnRN(onDismissed);
+  };
   return usePanGesture({
     activeOffsetY: space.md,
     failOffsetX: [-space.md, space.md],
@@ -146,17 +170,33 @@ export function useDismissPan(
     onDeactivate: (event) => {
       "worklet";
       if (
-        !event.canceled &&
-        shouldDismiss(event.translationY, event.velocityY, height)
+        event.canceled ||
+        !shouldDismiss(event.translationY, event.velocityY, height)
       ) {
-        if (Platform.OS === "ios") {
-          // Keep moving on the UI thread while the navigator handles the pop.
-          offset.set(withTiming(height, { duration: 180 }));
-        }
-        scheduleOnRN(onDismiss);
+        offset.set(withSpring(0, springs.spatialDefault));
         return;
       }
-      offset.set(withSpring(0, springs.spatialDefault));
+      if (reduceMotion) {
+        fade.set(
+          withTiming(
+            0,
+            { duration: 200, reduceMotion: ReduceMotion.Never },
+            done,
+          ),
+        );
+        return;
+      }
+      offset.set(
+        withTiming(
+          height,
+          {
+            duration: leaveDuration(height - offset.get(), event.velocityY),
+            easing: Easing.out(Easing.quad),
+            reduceMotion: ReduceMotion.Never,
+          },
+          done,
+        ),
+      );
     },
   });
 }

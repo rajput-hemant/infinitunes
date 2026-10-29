@@ -27,7 +27,9 @@ export default function RootLayout() {
             screen keeps the tabs drawn underneath, so the player's own drag
             down (`useDismissPan`) shows them as it follows the finger. Not
             the native stack's vertical swipe: it starts on sideways drags
-            too, which belong to the song swipe and the scrubber. */}
+            too, which belong to the song swipe and the scrubber. A drag that
+            closes it takes the page off screen itself and pops with no
+            animation; Back and the grabber keep this slide. */}
         <Stack.Screen
           name="player"
           dangerouslySingular

@@ -4,7 +4,12 @@ import { impactAsync } from "expo-haptics";
 
 import { playerStore } from "~/playback/player-store";
 
-import { changeSong, shouldDismiss, swipeDecision } from "./gestures";
+import {
+  changeSong,
+  leaveDuration,
+  shouldDismiss,
+  swipeDecision,
+} from "./gestures";
 import { scrubStep } from "./haptics";
 
 const WIDTH = 400;
@@ -78,6 +83,14 @@ describe("shouldDismiss", () => {
   it("stays for a short drag, or a drag that ends above where it began", () => {
     expect(shouldDismiss(150, 100, HEIGHT)).toBe(false);
     expect(shouldDismiss(0, 900, HEIGHT)).toBe(false);
+  });
+});
+
+describe("leaveDuration", () => {
+  it("leaves at the release speed, within bounds", () => {
+    expect(leaveDuration(500, 4000)).toBe(250);
+    expect(leaveDuration(500, 100_000)).toBe(150);
+    expect(leaveDuration(500, 0)).toBe(350);
   });
 });
 
