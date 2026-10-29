@@ -32,7 +32,7 @@ export function useServerPlaylists() {
 }
 
 /** The playlists query of `userId`, for hooks and `queryClient.fetchQuery`. */
-export function serverPlaylistsQuery(userId: string | undefined) {
+function serverPlaylistsQuery(userId: string | undefined) {
   return {
     queryKey: userQueryKey(trpc.user.getUserPlaylists.queryKey(), userId),
     queryFn: () => trpcClient.user.getUserPlaylists.query(),
@@ -76,7 +76,7 @@ export function useServerPlaylistDetails(playlistId: string) {
 }
 
 /** Every playlist's song ids of `userId`, in one request (`getPlaylistMembership`). */
-export function playlistMembershipQuery(userId: string | undefined) {
+function playlistMembershipQuery(userId: string | undefined) {
   return {
     queryKey: userQueryKey(trpc.user.getPlaylistMembership.queryKey(), userId),
     queryFn: () => trpcClient.user.getPlaylistMembership.query(),

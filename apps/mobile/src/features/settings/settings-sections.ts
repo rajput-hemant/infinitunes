@@ -27,7 +27,7 @@ import {
 import { useSongCacheSettings } from "./use-song-cache-settings";
 
 /** The tile colours of iOS's row icons (`ROW_TINT` resolves them to system colours). */
-export type RowTint =
+type RowTint =
   | "blue"
   | "gray"
   | "green"

@@ -10,7 +10,7 @@ import type { GlassRole } from "~/lib/glass/overlays";
 import { GLASS_PRESETS, glassPaintVars } from "~/lib/glass/tuning";
 import type { GlassPresetId } from "~/lib/glass/tuning";
 
-export type GlassVariant = "regular" | "clear" | "tinted";
+type GlassVariant = "regular" | "clear" | "tinted";
 
 type RenderElement = React.ReactElement<
   React.HTMLAttributes<HTMLElement> & React.RefAttributes<HTMLElement>

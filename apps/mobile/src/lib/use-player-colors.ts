@@ -21,7 +21,7 @@ import type { PlayerColors } from "~/lib/artwork-colors";
 import { usePlayer } from "~/playback/player-store";
 
 /** One cache entry per artwork URL; a cover's colours never change. */
-export function artworkColorsKey(src: string) {
+function artworkColorsKey(src: string) {
   return ["artwork-colors", src] as const;
 }
 

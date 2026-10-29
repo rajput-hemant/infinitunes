@@ -12,7 +12,7 @@ import { cn } from "~/lib/utils";
 
 import { SettingsRow } from "./settings-row";
 
-export type QualityOption<T extends string> = {
+type QualityOption<T extends string> = {
   value: T;
   detail?: string;
 };

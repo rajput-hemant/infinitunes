@@ -6,7 +6,7 @@ import { prefersReducedMotion } from "~/lib/glass/motion";
 import { cn } from "~/lib/utils";
 
 /** How long each artist stays on screen before the next one fades in. */
-export const SPOTLIGHT_INTERVAL_MS = 6000;
+const SPOTLIGHT_INTERVAL_MS = 6000;
 
 type SpotlightState = { index: number; previous: number | null };
 

@@ -133,7 +133,7 @@ export function PlayPauseButton() {
  * control colour on a wash (3:1 against it, its glyph 4.5:1), `primary`
  * on the D1 palette.
  */
-export function ProminentPlayPauseButton() {
+function ProminentPlayPauseButton() {
   const { icon, label } = usePlayPause();
   const playing = label === "Pause";
   return Platform.OS === "android" ? (

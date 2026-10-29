@@ -19,17 +19,6 @@ export function ArtistTabsSkeleton() {
   );
 }
 
-/** Mirrors `CategoryFilter`: three 20px badges with 24px above and below. */
-export function CategoryFilterSkeleton() {
-  return (
-    <div className="my-6 flex h-[1.3125rem] items-end gap-2">
-      <Skeleton className="h-5 w-16 rounded-4xl" />
-      <Skeleton className="h-5 w-12 rounded-4xl" />
-      <Skeleton className="h-5 w-14 rounded-4xl" />
-    </div>
-  );
-}
-
 /** The Overview panel: a section title over the top ten songs. */
 export function ArtistOverviewSkeleton() {
   return (

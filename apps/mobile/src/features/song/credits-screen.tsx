@@ -16,7 +16,7 @@ import { entityHref } from "~/navigation/entity-href";
 import { sizes, space } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
 
-export const CREDIT_SECTIONS = [
+const CREDIT_SECTIONS = [
   "Performing Artists",
   "Composition & Lyrics",
   "Starring",

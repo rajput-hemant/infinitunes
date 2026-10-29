@@ -63,8 +63,6 @@ export const libraryNav: NavItem[] = [
   },
 ];
 
-export const sidebarNav: NavItem[] = [...browseNav, ...libraryNav];
-
 /** The mockup tab bar rule: exact match, or a path below the item. `/` only matches itself. */
 export function isNavActive(pathname: string | null, href: string) {
   if (pathname === null) return false;

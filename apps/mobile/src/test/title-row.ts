@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react-native";
 
 /** The nearest flex row above a title: the line its explicit badge leads. */
-export function titleRow(text: ReturnType<typeof screen.getByText>) {
+function titleRow(text: ReturnType<typeof screen.getByText>) {
   let row = text.parent;
   while (row && !String(row.props.className ?? "").includes("flex-row")) {
     row = row.parent;

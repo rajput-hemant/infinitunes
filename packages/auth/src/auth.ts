@@ -36,10 +36,10 @@ import { originOf, parseUrl } from "./url";
 import { webRedirectsOnly } from "./web-redirects";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
-export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
+const RESET_TOKEN_TTL_SECONDS = 60 * 60;
 
 /** Email-change confirmation links expire after an hour. */
-export const EMAIL_CHANGE_TTL_SECONDS = 60 * 60;
+const EMAIL_CHANGE_TTL_SECONDS = 60 * 60;
 
 /**
  * Per-IP throttles on the reset endpoints (Better Auth's built-in limiter,
@@ -47,7 +47,7 @@ export const EMAIL_CHANGE_TTL_SECONDS = 60 * 60;
  * cap holds across serverless instances. The request endpoint is what sends
  * mail, so it is the tight one.
  */
-export const RESET_RATE_LIMITS = {
+const RESET_RATE_LIMITS = {
   "/request-password-reset": { window: 60, max: 3 },
   "/reset-password": { window: 60, max: 5 },
   // Configuring `sendVerificationEmail` also exposes this public mailer.

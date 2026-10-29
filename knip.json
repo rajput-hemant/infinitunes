@@ -10,9 +10,15 @@
       ]
     },
     "apps/mobile": {
-      "entry": ["src/**/*.ios.{ts,tsx}"],
+      "entry": [
+        "src/**/*.{ios,android}.{ts,tsx}",
+        "src/test/**/*.{ts,tsx}",
+        "metro.config.js"
+      ],
+      "metro": false,
       "ignoreDependencies": [
         "@babel/plugin-transform-react-jsx",
+        "expo-updates",
         "react-native-css-interop"
       ]
     },
@@ -21,6 +27,9 @@
     },
     "packages/ui": {
       "ignoreDependencies": ["@shadcn/lint"]
+    },
+    "packages/typescript-config": {
+      "ignoreUnresolved": ["next"]
     },
     "packages/core": {
       "entry": ["tests/dom/preload.ts"]

@@ -33,7 +33,7 @@ const TRACK = Platform.select({
 });
 
 /** What a screen reader's swipe up or down seeks by, in seconds. */
-export const SEEK_STEP_SECONDS = 10;
+const SEEK_STEP_SECONDS = 10;
 
 /** A drag with no slider event for this long counts as released. */
 export const SCRUB_STALE_MS = 3000;

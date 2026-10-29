@@ -21,9 +21,7 @@ export function languagesSummary(languages: readonly Lang[]): string {
 }
 
 /** The languages in effect: the choice, or the defaults without one. */
-export function effectiveLanguages(
-  languages: readonly Lang[],
-): readonly Lang[] {
+function effectiveLanguages(languages: readonly Lang[]): readonly Lang[] {
   return languages.length > 0 ? languages : DEFAULT_LANGUAGES;
 }
 

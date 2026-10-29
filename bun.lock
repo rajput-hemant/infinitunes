@@ -155,7 +155,6 @@
         "@better-auth/expo": "catalog:",
         "@better-auth/passkey": "^1.7.13",
         "@infinitunes/db": "workspace:*",
-        "@infinitunes/env": "workspace:*",
         "@infinitunes/types": "workspace:*",
         "@t3-oss/env-core": "^0.13.11",
         "bcryptjs": "catalog:",
@@ -195,7 +194,6 @@
       "name": "@infinitunes/db",
       "version": "0.1.0",
       "dependencies": {
-        "@infinitunes/env": "workspace:*",
         "@t3-oss/env-core": "^0.13.11",
         "bcryptjs": "catalog:",
         "drizzle-orm": "catalog:",

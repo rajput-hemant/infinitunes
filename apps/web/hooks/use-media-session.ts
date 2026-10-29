@@ -5,9 +5,9 @@ import { mediaMetadataInit, positionStateOf } from "~/lib/media-session";
 
 type Howl = ReturnType<typeof useAudioPlayerContext>["player"];
 
-export type MediaSessionTrack = Parameters<typeof mediaMetadataInit>[0];
+type MediaSessionTrack = Parameters<typeof mediaMetadataInit>[0];
 
-export type MediaSessionActions = {
+type MediaSessionActions = {
   play: () => void;
   pause: () => void;
   previous: () => void;

@@ -24,7 +24,7 @@ function draw(img: HTMLImageElement): ArtworkSample | null {
  * Samples an artwork into an 8x8 grid and returns its mean luminance. Cached by URL; `null` when the image fails to load or the
  * canvas is tainted. The image CDN must send `Access-Control-Allow-Origin`.
  */
-export function sampleArtwork(url: string): Promise<ArtworkSample | null> {
+function sampleArtwork(url: string): Promise<ArtworkSample | null> {
   const cached = samples.get(url);
   if (cached) return cached;
   const result = new Promise<ArtworkSample | null>((resolve) => {

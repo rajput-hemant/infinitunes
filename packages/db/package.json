@@ -17,7 +17,6 @@
     "db:check": "bunx --bun drizzle-kit check --config=./src/drizzle.config.ts"
   },
   "dependencies": {
-    "@infinitunes/env": "workspace:*",
     "@t3-oss/env-core": "^0.13.11",
     "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",

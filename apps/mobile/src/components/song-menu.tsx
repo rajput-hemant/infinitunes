@@ -203,7 +203,7 @@ export function useSongMenuEntries({
 }
 
 /** What a long press on a song previews: its art, name, credits and album. */
-export function songPreview(song: TrackItem): ContextPreviewProps {
+function songPreview(song: TrackItem): ContextPreviewProps {
   return {
     image: song.image,
     title: song.name,

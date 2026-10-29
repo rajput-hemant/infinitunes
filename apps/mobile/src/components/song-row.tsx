@@ -152,10 +152,7 @@ export function SongRow({
  * Apple Music's leading pair: Play Next alone, and Add to Queue as a second
  * capsule once something is queued after the current song.
  */
-export function swipeLeading(
-  song: TrackItem,
-  hasUpNext: boolean,
-): SwipeAction[] {
+function swipeLeading(song: TrackItem, hasUpNext: boolean): SwipeAction[] {
   const { playNext, addToQueue } = playerStore.getState();
   const next: SwipeAction = {
     label: "Play Next",

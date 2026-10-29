@@ -504,7 +504,7 @@ export function registerGlass(
   return () => unregisterGlass(el);
 }
 
-export function unregisterGlass(el: HTMLElement) {
+function unregisterGlass(el: HTMLElement) {
   const entry = entries.get(el);
   if (!entry) return;
   clearTimeout(entry.timer);

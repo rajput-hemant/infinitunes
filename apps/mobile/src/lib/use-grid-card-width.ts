@@ -9,7 +9,7 @@ import { type WindowClass, useWindowClass } from "./use-window-class";
  * at most, so its six categories leave no orphan row) and catalog card grids
  * (`GridCell`). A wider window gets more columns, never wider phone cards.
  */
-export const GRID_COLUMNS = {
+const GRID_COLUMNS = {
   picks: { compact: 2, medium: 3, expanded: 4 },
   browse: { compact: 2, medium: 3, expanded: 3 },
   cards: { compact: 3, medium: 4, expanded: 6 },

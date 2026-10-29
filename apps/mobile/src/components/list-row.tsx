@@ -25,7 +25,7 @@ import { Icon } from "./ui/icon";
 import type { SymbolName } from "./ui/icon";
 import { Text } from "./ui/text";
 
-export type ListRowLeading =
+type ListRowLeading =
   | { artwork: string; round?: boolean }
   | { icon: SymbolName }
   | { index: number };

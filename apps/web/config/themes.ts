@@ -18,7 +18,5 @@ export const themes = [
   { name: "violet", label: "Violet", hex: "#7c3aed" },
 ] as const;
 
-export type ThemePreset = (typeof themes)[number];
-
 /** The neutral base of the stylesheet's default primary tokens (`styles/globals.css`). */
 export const DEFAULT_ACCENT_HEX = "#171717";

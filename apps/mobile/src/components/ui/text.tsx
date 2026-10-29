@@ -18,7 +18,7 @@ const toneClasses = {
   error: "text-destructive",
 } as const;
 
-export type TextTone = keyof typeof toneClasses;
+type TextTone = keyof typeof toneClasses;
 
 /** iOS scales each role along its own Dynamic Type text style (Android ignores the prop). */
 const RAMPS = {

@@ -11,7 +11,7 @@ export const playerHaptics = {
 };
 
 /** The seek slider ticks once per this share of the track. */
-export const SCRUB_TICK_SHARE = 0.05;
+const SCRUB_TICK_SHARE = 0.05;
 
 /** Which tick step `seconds` falls in, so a drag ticks when it changes. */
 export function scrubStep(seconds: number, duration: number): number {

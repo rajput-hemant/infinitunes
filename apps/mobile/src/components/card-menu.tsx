@@ -16,10 +16,7 @@ import { ContextLink, LINK_MENUS, LongPressMenu } from "./context-menu";
 import { NativeMenu } from "./native-menu";
 import type { MenuEntry } from "./native-menu";
 
-export {
-  LINK_MENUS,
-  menuAccessibilityActions as cardAccessibilityActions,
-} from "./context-menu";
+export { menuAccessibilityActions as cardAccessibilityActions } from "./context-menu";
 
 /** Types whose card offers Shuffle (a list of songs, not one song or a station). */
 const SHUFFLE_TYPES: ReadonlySet<string> = new Set([

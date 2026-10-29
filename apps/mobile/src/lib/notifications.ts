@@ -28,7 +28,7 @@ export const DOWNLOADS_CHANNEL_ID = "downloads";
  * the near-black `primary`. `app.config.ts` repeats the value (that file runs
  * in Node and cannot load this module): keep them equal.
  */
-export const brand = "#067f9a";
+const brand = "#067f9a";
 
 /** The tint of the small icon and the channel light. */
 export const NOTIFICATION_ACCENT = brand;

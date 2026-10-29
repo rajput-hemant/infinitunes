@@ -80,7 +80,7 @@ function linear(channel: number): number {
 }
 
 /** WCAG relative luminance of an opaque `#rrggbb` colour. */
-export function relativeLuminance(hex: string): number {
+function relativeLuminance(hex: string): number {
   const [r, g, b] = channels(hex).map(linear) as [number, number, number];
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }

@@ -15,7 +15,7 @@ export type Failure = { id: number; message: string; action?: FailureAction };
 export const FAILURE_MS = 4000;
 export const FAILURE_WITH_ACTION_MS = 8000;
 /** A screen reader needs longer to reach the message and its action. */
-export const SCREEN_READER_FACTOR = 3;
+const SCREEN_READER_FACTOR = 3;
 
 let screenReader = false;
 void AccessibilityInfo.isScreenReaderEnabled?.()

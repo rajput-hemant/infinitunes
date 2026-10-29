@@ -98,7 +98,7 @@ const COMPACT_ART = art.tile;
 export type PlayerView = "art" | "lyrics" | "queue";
 
 /** The `view` route param (`/player?view=queue`) as a view; anything else is the artwork. */
-export function playerViewOf(param: unknown): PlayerView {
+function playerViewOf(param: unknown): PlayerView {
   return param === "queue" || param === "lyrics" ? param : "art";
 }
 

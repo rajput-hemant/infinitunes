@@ -9,7 +9,7 @@ import { useWindowDimensions } from "react-native";
 export type WindowClass = "compact" | "medium" | "expanded";
 
 /** Where `medium` and `expanded` start, in dp/pt. */
-export const WINDOW_BREAKPOINTS = { medium: 600, expanded: 840 } as const;
+const WINDOW_BREAKPOINTS = { medium: 600, expanded: 840 } as const;
 
 export function windowClassOf(width: number): WindowClass {
   if (width >= WINDOW_BREAKPOINTS.expanded) return "expanded";

@@ -15,9 +15,9 @@ import { usePalette, useTokenColor } from "~/theme/use-palette";
 const SEMIBOLD = { fontWeight: "600" } as const;
 
 /** The chip is 32pt tall; slop above and below makes the 48pt target. */
-export const CHIP_HIT_SLOP = { top: 8, bottom: 8 } as const;
+const CHIP_HIT_SLOP = { top: 8, bottom: 8 } as const;
 
-export type Chip = {
+type Chip = {
   key: string;
   label: string;
   selected: boolean;

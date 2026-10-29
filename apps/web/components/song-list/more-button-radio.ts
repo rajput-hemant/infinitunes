@@ -33,7 +33,7 @@ export type RadioSeed = {
  * play" path for every "Play Radio" entry. Kept outside the hooks: the React
  * Compiler bails out on try/catch around ternaries and optional chains.
  */
-export async function startRadio(seed: RadioSeed, radio: RadioStart) {
+async function startRadio(seed: RadioSeed, radio: RadioStart) {
   const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
     radio;
   const { type, name, artistId, language } = seed;
@@ -81,7 +81,7 @@ export async function startRadio(seed: RadioSeed, radio: RadioStart) {
 }
 
 /** The artist's station when the row has credits, otherwise one named after the item. */
-export function tileRadioSeed(item: TileMoreItem): RadioSeed {
+function tileRadioSeed(item: TileMoreItem): RadioSeed {
   const primary = getItemArtists(item)?.[0];
   const artistName = primary?.name;
 

@@ -5,7 +5,7 @@ import { Platform, Pressable, View } from "react-native";
 import { TEXT_BUTTON_HIT_SLOP } from "./ui/hit-slop";
 import { Text } from "./ui/text";
 
-export type SectionHeaderAction = {
+type SectionHeaderAction = {
   label: string;
   /** A link ("See All") when set... */
   href?: Href;

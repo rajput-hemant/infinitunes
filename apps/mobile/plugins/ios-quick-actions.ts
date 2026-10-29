@@ -19,8 +19,7 @@ const SYMBOLS: Record<ShortcutIcon, string> = {
 };
 
 /** `infinitunes://me/liked-songs` -> `/me/liked-songs`, a path the app routes. */
-export const hrefOf = (link: string) =>
-  link.replace(`${DEEP_LINK_SCHEME}:/`, "");
+const hrefOf = (link: string) => link.replace(`${DEEP_LINK_SCHEME}:/`, "");
 
 export function buildIosQuickActions() {
   return SHORTCUTS.filter((s) => s.launcher).map((s) => ({

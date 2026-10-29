@@ -52,7 +52,7 @@ function ProfileButton() {
  * and Profile, both pushed onto the current tab. Settings is not a tab of its own. Languages
  * lives in Settings only. Pass it as the root screen's `headerRight`.
  */
-export function TopLevelActions() {
+function TopLevelActions() {
   return (
     <View className="flex-row items-center">
       <IconButton

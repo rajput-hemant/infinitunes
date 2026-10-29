@@ -5,7 +5,7 @@ import { APPEARANCE_MODES } from "~/theme/appearance";
 import { ACCENT_IDS, CORNER_STYLES } from "~/theme/tokens";
 import type { CornerStyle } from "~/theme/tokens";
 
-export const titleCase = (value: string) =>
+const titleCase = (value: string) =>
   `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 
 export const appearanceOptions = APPEARANCE_MODES.map((mode) => ({

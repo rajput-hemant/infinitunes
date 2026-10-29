@@ -18,7 +18,7 @@ export type UserMenuUser = {
   image?: string | null;
 };
 
-export type UserMenuLink = {
+type UserMenuLink = {
   href: Route;
   label: string;
   icon: LucideIcon;
@@ -26,7 +26,7 @@ export type UserMenuLink = {
   needsUser: boolean;
 };
 
-export const userMenuLinks: UserMenuLink[] = [
+const userMenuLinks: UserMenuLink[] = [
   { href: "/me", label: "Library", icon: Library, needsUser: true },
   {
     href: "/me/liked-songs",

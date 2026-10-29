@@ -20,7 +20,7 @@ import { playlistDetailsQuery } from "~/user-data/playlists";
  * with the native sides (`plugins/ios-app-intents`, `plugins/android-*`):
  * rename nothing here without them.
  */
-export const APP_ACTIONS = [
+const APP_ACTIONS = [
   "resume",
   "clear-cache",
   "play-liked",

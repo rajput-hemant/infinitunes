@@ -7,7 +7,7 @@ import { NATIVE_APP_SCHEME } from "@infinitunes/auth/native-app";
 
 export const DEEP_LINK_SCHEME = NATIVE_APP_SCHEME;
 
-export const LINKS = {
+const LINKS = {
   resume: `${DEEP_LINK_SCHEME}://action/resume`,
   clearCache: `${DEEP_LINK_SCHEME}://action/clear-cache`,
   playSearch: `${DEEP_LINK_SCHEME}://action/play-search`,
@@ -121,7 +121,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
 const OPEN_APP_FEATURE = "actions.intent.OPEN_APP_FEATURE";
 const GET_THING = "actions.intent.GET_THING";
 
-export const MAIN_ACTIVITY_NAME = ".MainActivity";
+const MAIN_ACTIVITY_NAME = ".MainActivity";
 export const PLAY_FROM_SEARCH_ACTIVITY = "PlayFromSearchActivity";
 
 const shortLabelName = (s: Shortcut) => `shortcut_${s.id}_short`;
@@ -129,7 +129,7 @@ const longLabelName = (s: Shortcut) => `shortcut_${s.id}_long`;
 const namesArray = (s: Shortcut) => `${s.id}_names`;
 const iconName = (icon: ShortcutIcon) => `ic_shortcut_${icon}`;
 
-export function escapeXml(value: string): string {
+function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
