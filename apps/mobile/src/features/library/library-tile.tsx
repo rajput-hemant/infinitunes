@@ -36,7 +36,7 @@ export function LibraryTile({
       href={href}
       accessibilityLabel={[title, detail].filter(Boolean).join(", ")}
       className={cx(
-        "flex-1 justify-between gap-3 rounded-lg p-4",
+        "justify-between gap-3 rounded-lg p-4",
         MATERIAL ? "border border-border" : "bg-fill",
       )}
       style={{ minHeight: art.feature }}
