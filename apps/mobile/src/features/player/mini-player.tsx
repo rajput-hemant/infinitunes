@@ -36,6 +36,8 @@ const PLACEHOLDER = {
  * still opens the player).
  */
 export function MiniPlayer({ compact = false }: { compact?: boolean }) {
+  // Android's strip: 48dp art, a `headline` title and a `footnote` credit.
+  const strip = Platform.OS === "android";
   const router = useRouter();
   const press = usePressScale();
   const track = usePlayer(selectCurrentTrack);
@@ -67,12 +69,12 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
               <Animated.View
                 style={Platform.OS === "ios" ? press.style : undefined}
               >
-                <Artwork image={track.image} size="mini" />
+                <Artwork image={track.image} size={strip ? "dock" : "mini"} />
               </Animated.View>
               <View className="flex-1">
                 <WashText
-                  variant="subhead"
-                  emphasized
+                  variant={strip ? "headline" : "subhead"}
+                  emphasized={!strip}
                   numberOfLines={1}
                   maxFontSizeMultiplier={maxFontScale.chrome}
                 >
@@ -81,7 +83,7 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
                 <View className="flex-row items-center gap-1">
                   <RadioBadge />
                   <WashText
-                    variant="caption"
+                    variant={strip ? "footnote" : "caption"}
                     tone="muted"
                     numberOfLines={1}
                     maxFontSizeMultiplier={maxFontScale.chrome}

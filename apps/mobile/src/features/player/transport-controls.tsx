@@ -23,6 +23,7 @@ import { springs } from "~/theme/motion";
 import { iconSize, sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
+import { useRadii } from "~/theme/use-radii";
 
 import { playerHaptics } from "./haptics";
 
@@ -92,26 +93,38 @@ function useGlyphBounce(name: string) {
 }
 
 /**
- * Play or pause: the mini player's. A bare glyph on iOS; on Android Material
- * 3's filled icon button in the wash's control colour.
+ * Material 3 Expressive's play shape morph, shared by Now Playing and the
+ * dock: a rounded square (`pausedRadius`) while paused, a circle of `edge`
+ * while playing, on the default spatial spring (which follows reduce motion).
+ */
+export function usePlayShape(
+  playing: boolean,
+  edge: number,
+  pausedRadius: number,
+) {
+  const target = playing ? edge / 2 : pausedRadius;
+  const radius = useSharedValue(target);
+  useEffect(() => {
+    radius.set(withSpring(target, springs.spatialDefault));
+  }, [target, radius]);
+  return useAnimatedStyle(() => ({ borderRadius: radius.get() }));
+}
+
+/**
+ * Play or pause: the mini player's. A bare glyph on iOS; on Android the
+ * Now Playing shape morph at 40dp in the wash's control colour, inside a
+ * 48dp target (the pressable is the outer view, so the target is real).
  */
 export function PlayPauseButton() {
   const { icon, label } = usePlayPause();
-  const wash = useWashColors();
-  const primary = useTokenColor("primary");
-  const onPrimary = useTokenColor("primary-foreground");
   const { colors } = useTheme();
   const bounce = useGlyphBounce(icon.ios);
   if (Platform.OS === "android") {
     return (
-      <IconButton
+      <AndroidPlayPauseButton
         icon={icon}
         label={label}
-        variant="filled"
-        onPress={togglePlayback}
-        size="md"
-        fill={wash?.control ?? primary}
-        color={wash?.onControl ?? onPrimary}
+        playing={label === "Pause"}
       />
     );
   }
@@ -155,6 +168,50 @@ function ProminentPlayPauseButton() {
   );
 }
 
+function AndroidPlayPauseButton({
+  icon,
+  label,
+  playing,
+}: {
+  icon: SymbolName;
+  label: string;
+  playing: boolean;
+}) {
+  const wash = useWashColors();
+  const primary = useTokenColor("primary");
+  const onPrimary = useTokenColor("primary-foreground");
+  const ripple = usePalette()["fill-2"];
+  const shape = usePlayShape(playing, sizes.ctl, useRadii().sm);
+  return (
+    <Pressable
+      onPress={tappedPlayPause}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      android_ripple={{
+        color: ripple,
+        borderless: true,
+        radius: sizes.ctl / 2,
+      }}
+      className="min-h-touch min-w-touch items-center justify-center"
+    >
+      <Animated.View
+        testID="play-pause-shape"
+        className="items-center justify-center"
+        style={[
+          {
+            width: sizes.ctl,
+            height: sizes.ctl,
+            backgroundColor: wash?.control ?? primary,
+          },
+          shape,
+        ]}
+      >
+        <Icon name={icon} size="md" color={wash?.onControl ?? onPrimary} />
+      </Animated.View>
+    </Pressable>
+  );
+}
+
 function AndroidProminentPlayPauseButton({
   icon,
   label,
@@ -167,18 +224,7 @@ function AndroidProminentPlayPauseButton({
   const wash = useWashColors();
   const primary = useTokenColor("primary");
   const onPrimary = useTokenColor("primary-foreground");
-  // Android: Material 3 Expressive's shape morph, a rounded square while
-  // paused and a circle while playing, on the default spatial spring.
-  const radius = useSharedValue(playing ? PROMINENT_EDGE / 2 : PAUSED_RADIUS);
-  useEffect(() => {
-    radius.set(
-      withSpring(
-        playing ? PROMINENT_EDGE / 2 : PAUSED_RADIUS,
-        springs.spatialDefault,
-      ),
-    );
-  }, [playing, radius]);
-  const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
+  const shape = usePlayShape(playing, PROMINENT_EDGE, PAUSED_RADIUS);
   const ripple = usePalette()["fill-2"];
 
   return (

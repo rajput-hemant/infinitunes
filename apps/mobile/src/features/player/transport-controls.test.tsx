@@ -2,6 +2,7 @@ import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
+import { Platform } from "react-native";
 
 import { nowPlayingWash, OnWash } from "~/components/wash";
 import {
@@ -17,6 +18,7 @@ import {
 } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
+import { radii, sizes } from "~/theme/tokens";
 
 import { PlayPauseButton, TransportControls } from "./transport-controls";
 
@@ -83,6 +85,29 @@ describe("PlayPauseButton", () => {
     const pause = jest.spyOn(audioPlayer, "pause");
     await press("Pause");
     expect(pause).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("PlayPauseButton on Android", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("morphs the dock's 40dp shape: a circle playing, a rounded square paused", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(<PlayPauseButton />);
+    expect(screen.getByTestId("play-pause-shape")).toHaveStyle({
+      width: sizes.ctl,
+      borderRadius: radii.sm,
+    });
+  });
+
+  it("starts as a circle while playing", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    playbackStatusStore.setState({ playing: true });
+    await renderScreen(<PlayPauseButton />);
+    expect(screen.getByRole("button", { name: "Pause" })).toBeOnTheScreen();
+    expect(screen.getByTestId("play-pause-shape")).toHaveStyle({
+      borderRadius: sizes.ctl / 2,
+    });
   });
 });
 

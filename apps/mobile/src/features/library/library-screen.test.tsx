@@ -2,7 +2,7 @@ import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorit
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { router as appRouter } from "expo-router";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import type { AlertButton } from "react-native";
 
 import { CONTENT_REVEAL } from "~/components/skeletons";
@@ -116,6 +116,15 @@ describe("LibraryScreen", () => {
 
     await fireEvent.press(screen.getByText("Liked Songs"));
     expect(router.getPathname()).toBe("/me/liked-songs");
+  });
+
+  it("titles Android's page itself", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderLibraryTab();
+    expect(
+      await screen.findByRole("header", { name: "Library" }),
+    ).toBeOnTheScreen();
+    jest.restoreAllMocks();
   });
 
   it("counts the liked songs on their tile", async () => {

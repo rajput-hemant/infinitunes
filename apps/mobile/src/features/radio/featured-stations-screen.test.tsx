@@ -1,5 +1,6 @@
 import { rawStation, rawStationDetails } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { chooseCardAction, renderScreen } from "~/test/render";
@@ -32,6 +33,14 @@ describe("FeaturedStationsScreen", () => {
     await renderScreen(<FeaturedStationsScreen />);
 
     expect(featuredStations).not.toHaveBeenCalled();
+  });
+
+  it("titles Android's page itself, iOS's bar", async () => {
+    featuredStations.mockReturnValue(new Promise(() => {}));
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(<FeaturedStationsScreen />);
+    expect(screen.getByRole("header", { name: "Radio" })).toBeOnTheScreen();
+    jest.restoreAllMocks();
   });
 
   it("shows a skeleton under the intro while stations load", async () => {

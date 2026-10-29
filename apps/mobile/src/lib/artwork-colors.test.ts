@@ -160,6 +160,21 @@ describe("playerColorsFromSeed", () => {
     }
   });
 
+  it("gives a muted cover a visible Android wash, still AA", () => {
+    // Blue-grey sleeve: Material's secondary palette had washed it plain grey.
+    for (const scheme of SCHEMES) {
+      const colors = colorsFor("#5a6b80", scheme, "android");
+      const top = Hct.fromInt(Number.parseInt(colors.wash[0].slice(1), 16));
+      // Tone 90 holds less chroma in gamut than tone 25.
+      expect(top.chroma).toBeGreaterThanOrEqual(scheme === "dark" ? 30 : 15);
+      expect(meetsContrast(colors)).toBe(true);
+    }
+    const grey = colorsFor("#808080", "dark", "android");
+    expect(
+      Hct.fromInt(Number.parseInt(grey.wash[0].slice(1), 16)).chroma,
+    ).toBeLessThan(4);
+  });
+
   it("falls back for a seed that is not a colour", () => {
     expect(playerColorsFromSeed("red", "dark", "ios")).toBeNull();
     expect(playerColorsFromSeed("#fff", "dark", "android")).toBeNull();

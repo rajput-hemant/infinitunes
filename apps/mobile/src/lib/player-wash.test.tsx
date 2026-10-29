@@ -274,6 +274,26 @@ describe("the Android dock", () => {
     });
   });
 
+  it("is a strip with the track's controls, and absent with nothing to play", async () => {
+    jest.mocked(getColors).mockRejectedValue(new Error("offline"));
+    await renderScreen(<AndroidDock />);
+
+    expect(screen.getByTestId("dock-strip")).toHaveStyle({ left: 0, right: 0 });
+    expect(
+      screen.getByRole("button", { name: /^Now playing/ }),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Play" })).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Next track" }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByTestId("dock-line", { includeHiddenElements: true }),
+    ).toHaveStyle({ top: 0 });
+
+    await act(async () => playerStore.setState({ queue: [], currentIndex: 0 }));
+    expect(screen.queryByTestId("dock-strip")).toBeNull();
+  });
+
   it("keeps the wallpaper's card when the extractor fails", async () => {
     jest.mocked(getColors).mockRejectedValue(new Error("offline"));
     await renderScreen(<AndroidDock />);

@@ -270,7 +270,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Library playlists stay in a `FlashList` (`features/library/library-screen.tsx`); keep its tiles and section header in the list header rather than rebuilding a scrolling column.
 - Playback status is written to `playbackStatusStore` from the native status listener; don't subscribe the controller component to playhead ticks (`playback/playback-controller.tsx`, `playback/playback-status.ts`).
 - Player wash (D3, Now Playing and the Android dock): seed from `react-native-image-colors`, palette and AA check in
-  `lib/artwork-colors.ts`; `lib/use-player-colors.ts` reads the colours. No seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText` from `components/wash.tsx`.
+  `lib/artwork-colors.ts`; `lib/use-player-colors.ts` reads the colours. No seed or a contrast miss is `null`, the D1 tokens.
+  Android's wash top is the cover's hue at tone 25/90 with chroma held in 36-48 (`androidWashTop`; grey covers stay grey). Lay content on it with `OnWash`/`WashText` from `components/wash.tsx`.
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
   Playing; no custom code or icon), activated once (`setActiveForLockScreen`, which rebuilds the Android session) and then
   fed by `updateLockScreenMetadata`. Local notifications (`expo-notifications`, no push, `enableRemoteNotifications: false`)
@@ -376,13 +377,19 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `theme/spacing.test.ts` scans the sources and fails on one. Icons take `iconSize` names only.
 - Android is Material 3 Expressive at YouTube Music density (spec and mockup: `docs/design/android-m3-expressive/`),
   moving to "Ink & Wash" (`docs/design/android-next/direction.md`: the ink type scale with `letterSpacing`,
-  left-aligned entity headers ending in a 56dp filled Play, Download in the bar menu).
+  left-aligned entity headers ending in a 56dp filled Play, Download in the bar menu; ink tiles: quick picks, library
+  and browse tiles outlined in `border`, no tonal fill; `artRadii.android`: `sm` small art, `lg` cards and hero, `xl`
+  header and Now Playing).
   Its tokens are the android branches in `theme/tokens.ts` (`radii` 4/8/12/16/28, `androidEmphasizedWeights` behind
   `Text emphasized`, a no-op on iOS; `Text uppercase` for eyebrows; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
   `MotionScheme.expressive()`, `damping` as a coefficient; iOS's `iosPressRelease` lives there too). Android-only
   looks: `Button` and filled/tonal `IconButton` (40dp container + slop, 56dp `large`; corners morph full to `sm`
-  while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp; `tabs` are filter chips with a check, other rows outlined assist chips), Home's greeting as an in-page `largeTitle` (`HomeTitle`, `titleInPage`),
-  the dock's filled play circle and Now Playing's paused-square/playing-circle play button, Settings as a segmented
+  while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp; `tabs` are filter chips with a check, other rows outlined assist chips), Home's greeting, Library and Radio as an in-page `largeTitle` (`PageTitle`, `titleInPage`),
+  the dock as an edge-to-edge strip fused above the navigation bar (only while a track exists; progress line on top, 48dp art;
+  `player-dock.ts` reads `Platform.OS` at load, iOS before 26 keeps the floating inset), the paused-square/playing-circle
+  play shape (`usePlayShape`: 40dp in the dock, 72 in Now Playing), `primary` and the tab tint following the playing
+  cover under the default accent (`theme/playing-accent.ts`, AA-checked; an explicit accent wins), status bar icons
+  from the detail wash (`WashStatusBar`), Settings as a segmented
   list. One UI resolves `onSurfaceVariant` to `onSurface`; `withDynamicRoles` fades `muted-foreground` then (keep it).
   The top app bar is `surface`; a detail screen's bar shows its title only once the header art has scrolled
   under it. The design details (type, shape, components) are the spec's, keep it current. Adding a `.android.tsx` beside

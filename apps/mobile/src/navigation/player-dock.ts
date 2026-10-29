@@ -4,16 +4,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { hasTabBarAccessory } from "~/lib/platform";
 import { sizes, space } from "~/theme/tokens";
 
-/** The floating mini player's inset from the screen's side edges: the page gutter. */
-export const FLOATING_DOCK_INSET = sizes.page;
+/**
+ * Android's dock is an edge-to-edge strip fused to the top of the navigation
+ * bar; iOS before 26 keeps a floating capsule. Read at load (tests re-require).
+ */
+const STRIP = Platform.OS === "android";
 
-/** Space between the floating mini player and the tab bar. */
-const DOCK_GAP = space.sm;
+/** The mini player's inset from the screen's side edges: the page gutter, none for the strip. */
+export const FLOATING_DOCK_INSET = STRIP ? 0 : sizes.page;
+
+/** Space between the mini player and the tab bar: none for the strip. */
+const DOCK_GAP = STRIP ? 0 : space.sm;
 
 /** UITabBar (49pt) and the Material 3 navigation bar (80dp). */
-const TAB_BAR_HEIGHT = Platform.select({ ios: 49, default: 80 });
+const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 80;
 
-/** Distance from the screen bottom to the floating mini-player. */
+/** Distance from the screen bottom to the mini player. */
 export function useFloatingDockOffset(): number {
   return useSafeAreaInsets().bottom + TAB_BAR_HEIGHT + DOCK_GAP;
 }

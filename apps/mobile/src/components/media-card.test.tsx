@@ -116,7 +116,7 @@ describe("MediaCard", () => {
     });
     expect(card).toHaveProp(
       "className",
-      expect.stringContaining("overflow-hidden rounded-t-md"),
+      expect.stringContaining("overflow-hidden rounded-t-lg"),
     );
   });
 });

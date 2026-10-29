@@ -9,7 +9,7 @@ import { cx } from "~/lib/class-names";
 import { art } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
-/** Material's tiles sit on a tonal surface container; iOS's on a translucent fill. */
+/** Android: an ink tile (an `outlineVariant` hairline on the page); iOS: a translucent fill. */
 const MATERIAL = Platform.OS === "android";
 
 type LibraryTileProps = {
@@ -37,7 +37,7 @@ export function LibraryTile({
       accessibilityLabel={[title, detail].filter(Boolean).join(", ")}
       className={cx(
         "flex-1 justify-between gap-3 rounded-lg p-4",
-        MATERIAL ? "bg-card" : "bg-fill",
+        MATERIAL ? "border border-border" : "bg-fill",
       )}
       style={{ minHeight: art.feature }}
     >
