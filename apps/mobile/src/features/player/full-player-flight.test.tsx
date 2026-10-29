@@ -41,7 +41,7 @@ function nodes(predicate: (node: Node) => boolean) {
   return found;
 }
 
-/** The unmeasured slot of the view that shows: the stage, or the compact header row. */
+/** The persistent artwork destinations, including the visually hidden one. */
 function slot(pointerEvents: "none" | "box-none") {
   const [found] = nodes(
     (node) =>
@@ -90,15 +90,14 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-it("ignores a destination's layout that arrives after it unmounted", async () => {
+it("does not restart a reversed flight when a late layout arrives", async () => {
   await renderScreen(<FullPlayer />);
   await layOut(slot("none"), STAGE);
   expect(artX()).toBe(AT_STAGE);
 
   const toggle = screen.getByRole("button", { name: "Up next" });
   await fireEvent.press(toggle);
-  // The compact header mounts without a layout yet, then the view closes.
-  // Taken by value: the instance reports whichever view later holds its place.
+  // Close before the first animation frame; a late measurement must not reopen it.
   const closedLayout = slot("box-none").props.onLayout;
   await fireEvent.press(toggle);
   await layOut(slot("none"), STAGE);
@@ -121,4 +120,45 @@ it("crossfades instead of flying under reduced motion", async () => {
   await layOut(slot("box-none"), HEADER);
   // The compact slot at once: no flight waits on a frame.
   expect(artX()).toBe(AT_HEADER);
+});
+
+it.each(["Up next", "Lyrics"])(
+  "starts %s artwork flight on the first frame without a new layout",
+  async (label) => {
+    await renderScreen(<FullPlayer />);
+    await layOut(slot("none"), STAGE);
+    // Both destinations must already be measurable while the artwork is showing.
+    await layOut(slot("box-none"), HEADER);
+    const before = artX();
+    await fireEvent.press(screen.getByRole("button", { name: label }));
+    await act(async () => jest.advanceTimersByTime(16));
+    expect(artX()).not.toBe(before);
+  },
+);
+
+it("defers queue mounting and URL synchronization beyond the press", async () => {
+  const app = await renderScreen(<FullPlayer />);
+  await layOut(slot("none"), STAGE);
+  await layOut(slot("box-none"), HEADER);
+  await fireEvent.press(screen.getByRole("button", { name: "Up next" }));
+  expect(screen.getByLabelText("Loading player view")).toBeOnTheScreen();
+  expect(screen.queryByText("Up next · 0")).toBeNull();
+  expect(app.getSearchParams()).toEqual({});
+  await act(async () => jest.advanceTimersByTime(48));
+  expect(screen.getByText("Up next · 0")).toBeOnTheScreen();
+  expect(app.getSearchParams()).toEqual({ view: "queue" });
+});
+
+it("cancels deferred content and URL writes on a rapid reversal", async () => {
+  const app = await renderScreen(<FullPlayer />);
+  await layOut(slot("none"), STAGE);
+  await layOut(slot("box-none"), HEADER);
+  const toggle = screen.getByRole("button", { name: "Up next" });
+  await fireEvent.press(toggle);
+  await fireEvent.press(toggle);
+  await act(async () => jest.advanceTimersByTime(600));
+  expect(artX()).toBe(AT_STAGE);
+  expect(screen.queryByText("Up next · 0")).toBeNull();
+  expect(toggle).toHaveProp("accessibilityState", { selected: false });
+  expect(app.getSearchParams()).toEqual({});
 });

@@ -83,7 +83,7 @@ describe("FullPlayer", () => {
     );
 
     expect(
-      screen.getByText("No lyrics available for this track."),
+      await screen.findByText("No lyrics available for this track."),
     ).toBeOnTheScreen();
     expect(procedure("song.syncedLyrics")).not.toHaveBeenCalled();
   });
@@ -143,7 +143,7 @@ describe("FullPlayer", () => {
     await fireEvent.press(toggle);
 
     expect(toggle).toHaveProp("accessibilityState", { selected: true });
-    expect(screen.getByText("Up next · 2")).toBeOnTheScreen();
+    expect(await screen.findByText("Up next · 2")).toBeOnTheScreen();
     expect(screen.getByText("Charlie")).toBeOnTheScreen();
     // The header keeps the current song, and the scrubber stays.
     expect(screen.getByText("Alpha")).toBeOnTheScreen();
@@ -259,7 +259,7 @@ describe("FullPlayer", () => {
     await fireEvent.press(upNext);
     expect(upNext).toHaveProp("accessibilityState", { selected: false });
 
-    // A new `?view=` link still switches the view, unlike the local toggle.
+    // A new `?view=` link still switches the locally controlled view.
     await act(async () => router.setParams({ view: "lyrics" }));
     expect(screen.getByRole("button", { name: "Lyrics" })).toHaveProp(
       "accessibilityState",
