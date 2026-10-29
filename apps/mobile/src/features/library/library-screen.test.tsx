@@ -169,6 +169,7 @@ describe("LibraryScreen", () => {
     await renderLibraryTab();
 
     expect(await screen.findByLabelText("Loading")).toBeOnTheScreen();
+    expect(screen.getAllByTestId("media-skeleton-menu")).toHaveLength(3);
   });
 
   it("invites a listener without playlists to make one", async () => {

@@ -127,6 +127,41 @@ export function SongListSkeleton({
   );
 }
 
+/** Navigation rows use artwork and text without a song's favourite control. */
+export function MediaListSkeleton({
+  rows = 8,
+  menu = false,
+}: {
+  rows?: number;
+  menu?: boolean;
+}) {
+  const frame = useFrame();
+  return (
+    <SkeletonPulse>
+      {range(rows).map((row) => (
+        <View
+          key={row}
+          testID="media-skeleton-row"
+          className="min-h-row flex-row items-center"
+          style={{ paddingEnd: menu ? space.xs : space.lg }}
+        >
+          <View className="min-h-row flex-1 flex-row items-center gap-3 py-1 pl-page">
+            <SkeletonBlock style={frame("row")} />
+            <View className="flex-1">
+              <SkeletonText variant="body" width="60%" />
+              <SkeletonText variant="footnote" width="40%" />
+            </View>
+            {!menu && Platform.OS === "ios" ? (
+              <SkeletonText variant="body" width={iconSize.sm} />
+            ) : null}
+          </View>
+          {menu ? <MenuGlyphSkeleton testID="media-skeleton-menu" /> : null}
+        </View>
+      ))}
+    </SkeletonPulse>
+  );
+}
+
 function HeaderLine() {
   return (
     <View className={`px-page pb-2 ${sectionTopClass()}`}>
