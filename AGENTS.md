@@ -104,6 +104,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     Song rows all rise in; the entrance stagger is capped at 10 (`song-list/song-list-row.tsx`).
     Catalog list pages put the heading in the shell and the fetched grid in
     `Suspense`; they have no `loading.tsx`.
+    Their next page loads behind boneyard bones (`components/catalog/next-page-skeleton.tsx`,
+    committed `bones/*.bones.json`); recapture with `bun run skeletons:capture` against `next start` on :3000.
   - Do not use `<Link prefetch>` (true) or `partialPrefetching`: on 16.3.6 with the
     `@modal/[...catchAll]` slot, `prefetch={true}` made the client re-request the
     modal catch-all segment of every visible link endlessly (hundreds of requests a

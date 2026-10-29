@@ -1,8 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-
 import { CatalogEnd } from "~/components/catalog/catalog-states";
+import { NextPageSkeleton } from "~/components/catalog/next-page-skeleton";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 
 type CatalogLoadMoreProps = {
@@ -29,15 +28,12 @@ export function CatalogLoadMore(props: CatalogLoadMoreProps) {
   }
 
   return (
-    <output
-      ref={ref}
-      className="flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted-foreground"
-    >
-      {isFetchingNextPage && (
-        <>
-          <Loader2 aria-hidden className="size-5 animate-spin" /> Loading...
-        </>
-      )}
-    </output>
+    <>
+      <NextPageSkeleton loading={isFetchingNextPage} />
+      {/* Persistent, so screen readers hear the text when it appears. */}
+      <output ref={ref} className="block py-6">
+        {isFetchingNextPage && <span className="sr-only">Loading...</span>}
+      </output>
+    </>
   );
 }

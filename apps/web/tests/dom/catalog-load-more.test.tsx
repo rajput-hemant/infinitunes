@@ -93,6 +93,10 @@ it("keeps a persistent status region so the loading text is announced", async ()
     isFetchingNextPage: true,
     onLoadMore: () => {},
   });
-  const spinner = loading.querySelector("svg");
-  expect(spinner?.getAttribute("aria-hidden")).toBe("true");
+  expect(loading.querySelector("output")?.textContent).toBe("Loading...");
+  // The visual placeholder is busy, not a second announcement.
+  expect(loading.querySelector("[aria-busy=true]")).not.toBeNull();
+  for (const svg of loading.querySelectorAll("svg")) {
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+  }
 });
