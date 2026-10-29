@@ -4,7 +4,11 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { lastPlayer } from "~/test/expo-audio";
 
 import { audioPlayer, markSourceEnded, replaceSource } from "./audio-engine";
-import { playbackPosition, requestPlaying } from "./playback-status";
+import {
+  playbackPosition,
+  playbackStatusStore,
+  requestPlaying,
+} from "./playback-status";
 import { playerStore } from "./player-store";
 import { resumePlayback, seekTo, togglePlayback } from "./transport";
 
@@ -107,6 +111,20 @@ describe("togglePlayback", () => {
 });
 
 describe("resumePlayback", () => {
+  it("supersedes an unacknowledged pause when an explicit play arrives", () => {
+    restoreQueue();
+    playerStore.getState().start();
+    replaceSource("https://example.test/a.mp4");
+    audioPlayer.play();
+    requestPlaying(false);
+    jest.clearAllMocks();
+
+    resumePlayback();
+
+    expect(play).toHaveBeenCalledTimes(1);
+    expect(playbackStatusStore.getState().playingIntent).toBe(true);
+  });
+
   it("leaves a playing track alone", () => {
     audioPlayer.play();
     jest.clearAllMocks();
