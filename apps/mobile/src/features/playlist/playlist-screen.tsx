@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { DeferredDetails } from "~/components/deferred-details";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -92,7 +93,11 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
           menu={{ rows }}
         />
       }
-      footer={<PlaylistFooter playlist={playlist} trending={trending} />}
+      footer={
+        <DeferredDetails>
+          <PlaylistFooter playlist={playlist} trending={trending} />
+        </DeferredDetails>
+      }
     />
   );
 }

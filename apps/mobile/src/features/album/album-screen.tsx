@@ -11,6 +11,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { View } from "react-native";
 
+import { DeferredDetails } from "~/components/deferred-details";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -116,7 +117,11 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
           menu={{ rows }}
         />
       }
-      footer={<AlbumFooter album={album} trending={trending} />}
+      footer={
+        <DeferredDetails>
+          <AlbumFooter album={album} trending={trending} />
+        </DeferredDetails>
+      }
     />
   );
 }

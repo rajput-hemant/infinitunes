@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { NativeTabs } from "expo-router/native-tabs";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Platform, Pressable, useWindowDimensions, View } from "react-native";
 import {
   GestureDetector,
   GestureHandlerRootView,
@@ -10,6 +10,7 @@ import Animated, { useSharedValue } from "react-native-reanimated";
 import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import { WashText } from "~/components/wash";
+import { usePressScale } from "~/lib/use-press-scale";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
 import { art, maxFontScale, radii } from "~/theme/tokens";
 
@@ -36,6 +37,7 @@ const PLACEHOLDER = {
  */
 export function MiniPlayer({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
+  const press = usePressScale();
   const track = usePlayer(selectCurrentTrack);
   const { width } = useWindowDimensions();
   const swipe = useSwipeable(useSharedValue(0), width);
@@ -50,6 +52,8 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
         <GestureDetector gesture={swipe.gesture}>
           <Pressable
             onPress={openPlayer}
+            onPressIn={Platform.OS === "ios" ? press.onPressIn : undefined}
+            onPressOut={Platform.OS === "ios" ? press.onPressOut : undefined}
             accessibilityRole="button"
             accessibilityLabel={`Now playing ${track.name}, ${track.subtitle}`}
             accessibilityHint="Opens the player"
@@ -60,7 +64,11 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
               className="flex-1 flex-row items-center gap-3"
               style={swipe.style}
             >
-              <Artwork image={track.image} size="mini" />
+              <Animated.View
+                style={Platform.OS === "ios" ? press.style : undefined}
+              >
+                <Artwork image={track.image} size="mini" />
+              </Animated.View>
               <View className="flex-1">
                 <WashText
                   variant="subhead"

@@ -18,6 +18,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import Animated from "react-native-reanimated";
 
+import { DeferredDetails } from "~/components/deferred-details";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
@@ -153,26 +154,28 @@ function SongPage({ song, modules, trending }: SongPageProps) {
           ],
         }}
       />
-      <LyricsSection songId={song.id} />
-      <MoreFromAlbum song={row} albumUrl={info.album_url} />
-      <SecondaryShelf
-        title={modules?.reco?.title ?? "Recommended Songs"}
-        query={recommendations}
-      />
-      <SecondaryShelf
-        title={modules?.currentlyTrending?.title ?? "Trending"}
-        query={trending}
-      />
-      {modules?.songsBysameArtists ? (
-        <SameArtistsShelf section={modules.songsBysameArtists} />
-      ) : null}
-      {modules?.songsBysameActors && hasStarringArtist(song) ? (
-        <SameActorsShelf section={modules.songsBysameActors} />
-      ) : null}
-      <Shelf
-        title={modules?.artists?.title ?? "Artists"}
-        items={artistCards(info.artistMap?.artists ?? [])}
-      />
+      <DeferredDetails>
+        <LyricsSection songId={song.id} />
+        <MoreFromAlbum song={row} albumUrl={info.album_url} />
+        <SecondaryShelf
+          title={modules?.reco?.title ?? "Recommended Songs"}
+          query={recommendations}
+        />
+        <SecondaryShelf
+          title={modules?.currentlyTrending?.title ?? "Trending"}
+          query={trending}
+        />
+        {modules?.songsBysameArtists ? (
+          <SameArtistsShelf section={modules.songsBysameArtists} />
+        ) : null}
+        {modules?.songsBysameActors && hasStarringArtist(song) ? (
+          <SameActorsShelf section={modules.songsBysameActors} />
+        ) : null}
+        <Shelf
+          title={modules?.artists?.title ?? "Artists"}
+          items={artistCards(info.artistMap?.artists ?? [])}
+        />
+      </DeferredDetails>
     </>
   );
 }

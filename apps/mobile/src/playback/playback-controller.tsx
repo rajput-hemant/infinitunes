@@ -57,12 +57,19 @@ const getPosition = () => audioPlayer.currentTime;
 function publishStatus(update: AudioStatus) {
   const next = {
     playing: update.playing,
+    playingIntent:
+      update.error ||
+      update.didJustFinish ||
+      playbackStatusStore.getState().playingIntent === update.playing
+        ? null
+        : playbackStatusStore.getState().playingIntent,
     buffering: update.isBuffering,
     duration: update.duration,
     bufferedTime: update.bufferedTime ?? 0,
   };
   const previous = playbackStatusStore.getState();
   if (
+    previous.playingIntent !== next.playingIntent ||
     previous.playing !== next.playing ||
     previous.buffering !== next.buffering ||
     previous.duration !== next.duration ||
@@ -190,6 +197,7 @@ export function PlaybackController() {
         // `replace(null)` emits no status: show the stopped engine now.
         playbackStatusStore.setState({
           playing: false,
+          playingIntent: null,
           buffering: false,
           duration: 0,
           bufferedTime: 0,

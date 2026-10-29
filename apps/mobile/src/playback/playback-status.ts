@@ -12,6 +12,8 @@ import { createStore } from "zustand/vanilla";
  */
 export type PlaybackStatus = {
   playing: boolean;
+  /** A pending transport press, until the engine acknowledges it. */
+  playingIntent: boolean | null;
   buffering: boolean;
   /** Seconds; 0 until the source has loaded. */
   duration: number;
@@ -21,6 +23,7 @@ export type PlaybackStatus = {
 
 export const playbackStatusStore = createStore<PlaybackStatus>()(() => ({
   playing: false,
+  playingIntent: null,
   buffering: false,
   duration: 0,
   bufferedTime: 0,
@@ -37,4 +40,17 @@ export const playbackPosition = createPositionStore();
 
 export function usePlaybackPosition() {
   return usePosition(playbackPosition);
+}
+
+let intentTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Shared by every play button; native status remains authoritative for playback. */
+export function requestPlaying(playing: boolean | null) {
+  clearTimeout(intentTimer);
+  playbackStatusStore.setState({ playingIntent: playing });
+  if (playing !== null) {
+    intentTimer = setTimeout(() => {
+      playbackStatusStore.setState({ playingIntent: null });
+    }, 1500);
+  }
 }
