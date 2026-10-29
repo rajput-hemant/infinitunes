@@ -2,6 +2,7 @@ import type { FavoriteType } from "@infinitunes/core/favorites";
 import { Platform, Pressable, useColorScheme, View } from "react-native";
 
 import { OnWash, nowPlayingWash } from "~/components/wash";
+import { useBatchOf } from "~/lib/download-store";
 import { usePlayerColors } from "~/lib/use-player-colors";
 import { artShadow, translucentFill } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
@@ -11,6 +12,7 @@ import type { CollectionMenuSpec } from "./collection-menu";
 import { DetailMenu } from "./detail/detail-menu";
 import { DownloadButton } from "./download-button";
 import { ExplicitBadge } from "./explicit-badge";
+import { LikeButton } from "./like-button";
 import { Artwork } from "./ui/artwork";
 import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
@@ -100,6 +102,10 @@ export function EntityHeader({
   const washEnd = Platform.OS === "android" ? background : `${wash}00`;
   const glass = translucentFill[useColorScheme() === "dark" ? "dark" : "light"];
   const songs = (menu?.rows ?? []).filter((row) => row.type === "song");
+  // Android sets the words on the leading edge ("Ink": the art stays centred);
+  // iOS centres everything, as Apple Music does.
+  const alignStart = Platform.OS === "android";
+  const textAlign = alignStart ? "text-left" : "text-center";
   return (
     <OnWash colors={colors ? nowPlayingWash(colors) : null}>
       <View className="w-full">
@@ -120,10 +126,14 @@ export function EntityHeader({
         {menu || like ? (
           <DetailMenu name={title} like={like} {...menu} />
         ) : null}
-        <View className="w-full max-w-readable items-center self-center px-page pb-6 pt-2">
+        <View
+          className={`w-full max-w-readable self-center px-page pb-6 pt-2 ${
+            alignStart ? "items-start" : "items-center"
+          }`}
+        >
           {/* The fill gives the iOS shadow an opaque shape to cast from. */}
           <View
-            className={`bg-card ${round ? "rounded-full" : "rounded-lg"}`}
+            className={`self-center bg-card ${round ? "rounded-full" : "rounded-lg"}`}
             style={ART_SHADOW}
           >
             <Artwork image={image} size="header" round={round} />
@@ -131,7 +141,7 @@ export function EntityHeader({
           {eyebrow || verified ? (
             <View className="mt-4 flex-row items-center gap-2">
               {eyebrow ? (
-                <Text variant="caption" tone="muted">
+                <Text variant="caption" tone="muted" uppercase={alignStart}>
                   {eyebrow}
                 </Text>
               ) : null}
@@ -154,16 +164,16 @@ export function EntityHeader({
             </View>
           ) : null}
           <View
-            className={`flex-row items-center justify-center gap-2 ${
-              eyebrow || verified ? "mt-1" : "mt-4"
-            }`}
+            className={`flex-row items-center gap-2 ${
+              alignStart ? "justify-start" : "justify-center"
+            } ${eyebrow || verified ? "mt-1" : "mt-4"}`}
           >
             {explicit ? <ExplicitBadge /> : null}
             <Text
               variant={ENTITY_TITLE_VARIANT}
               emphasized
               accessibilityRole="header"
-              className="shrink text-center"
+              className={`shrink ${textAlign}`}
             >
               {title}
             </Text>
@@ -181,46 +191,110 @@ export function EntityHeader({
                   variant="subhead"
                   tone="primary"
                   emphasized
-                  className="text-center underline"
+                  className={`${textAlign} underline`}
                 >
                   {subtitle}
                 </Text>
               </Pressable>
             ) : (
-              <Text variant="subhead" className="text-center">
+              <Text variant="subhead" className={textAlign}>
                 {subtitle}
               </Text>
             )
           ) : null}
           {meta ? (
-            <Text variant="footnote" tone="muted" className="text-center">
+            <Text variant="footnote" tone="muted" className={textAlign}>
               {meta}
             </Text>
           ) : null}
-          {/* Shuffle and Download are equal round buttons on a translucent
-              fill (the wash shows through) around the solid Play capsule. */}
-          <View className="mt-6 flex-row items-center justify-center gap-3">
-            {onShuffle ? (
-              <IconButton
-                icon={{ ios: "shuffle", android: "shuffle" }}
-                label="Shuffle"
-                variant="tonal"
-                fill={glass}
-                onPress={onShuffle}
-              />
-            ) : null}
-            <Button
-              label="Play"
-              icon={{ ios: "play.fill", android: "play_arrow" }}
-              roomy
-              onPress={onPlay}
+          {alignStart ? (
+            <AndroidActions
+              title={title}
+              songs={songs}
+              like={like}
+              glass={glass}
+              onPlay={onPlay}
+              onShuffle={onShuffle}
             />
-            {songs.length > 0 ? (
-              <DownloadButton title={title} songs={songs} fill={glass} />
-            ) : null}
-          </View>
+          ) : (
+            // Shuffle and Download are equal round buttons on a translucent
+            // fill (the wash shows through) around the solid Play capsule.
+            <View className="mt-6 flex-row items-center justify-center gap-3">
+              {onShuffle ? (
+                <IconButton
+                  icon={{ ios: "shuffle", android: "shuffle" }}
+                  label="Shuffle"
+                  variant="tonal"
+                  fill={glass}
+                  onPress={onShuffle}
+                />
+              ) : null}
+              <Button
+                label="Play"
+                icon={{ ios: "play.fill", android: "play_arrow" }}
+                roomy
+                onPress={onPlay}
+              />
+              {songs.length > 0 ? (
+                <DownloadButton title={title} songs={songs} fill={glass} />
+              ) : null}
+            </View>
+          )}
         </View>
       </View>
     </OnWash>
+  );
+}
+
+type ActionsProps = Pick<EntityHeaderProps, "like" | "onPlay" | "onShuffle"> & {
+  title: string;
+  songs: CollectionMenuSpec["rows"];
+  glass: string;
+};
+
+/**
+ * Android's action row: the heart at the leading edge, then Shuffle (a plain
+ * icon) and a 56dp filled Play at the trailing edge. Download is in the bar's
+ * menu; the row shows the overall ring only while this collection's run goes,
+ * so it can still be cancelled.
+ */
+function AndroidActions({
+  title,
+  songs,
+  like,
+  glass,
+  onPlay,
+  onShuffle,
+}: ActionsProps) {
+  const downloading = useBatchOf(songs[0]?.id) !== null;
+  return (
+    <View testID="header-actions" className="mt-4 w-full flex-row items-center">
+      {like ? (
+        <LikeButton
+          type={like.type}
+          token={like.token}
+          linkToken={like.linkToken}
+          name={title}
+        />
+      ) : null}
+      {downloading ? (
+        <DownloadButton title={title} songs={songs} fill={glass} />
+      ) : null}
+      <View className="flex-1" />
+      {onShuffle ? (
+        <IconButton
+          icon={{ ios: "shuffle", android: "shuffle" }}
+          label="Shuffle"
+          onPress={onShuffle}
+        />
+      ) : null}
+      <IconButton
+        icon={{ ios: "play.fill", android: "play_arrow" }}
+        label="Play"
+        variant="filled"
+        large
+        onPress={onPlay}
+      />
+    </View>
   );
 }

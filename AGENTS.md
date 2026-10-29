@@ -374,9 +374,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   rem is 14, so `theme.spacing` is closed to `spacingScale` (`0`, `px`, `*-1 2 3 4 6 8 12`, the named `sizes`)
   plus `full`: any other spacing class compiles to nothing and NativeWind drops it silently, so
   `theme/spacing.test.ts` scans the sources and fails on one. Icons take `iconSize` names only.
-- Android is Material 3 Expressive at YouTube Music density (spec and mockup: `docs/design/android-m3-expressive/`).
-  Its tokens are the android branches in `theme/tokens.ts` (`radii` 4/8/12/16/28, `emphasizedWeights` behind
-  `Text emphasized`, a no-op on iOS; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
+- Android is Material 3 Expressive at YouTube Music density (spec and mockup: `docs/design/android-m3-expressive/`),
+  moving to "Ink & Wash" (`docs/design/android-next/direction.md`: the ink type scale with `letterSpacing`,
+  left-aligned entity headers ending in a 56dp filled Play, Download in the bar menu).
+  Its tokens are the android branches in `theme/tokens.ts` (`radii` 4/8/12/16/28, `androidEmphasizedWeights` behind
+  `Text emphasized`, a no-op on iOS; `Text uppercase` for eyebrows; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
   `MotionScheme.expressive()`, `damping` as a coefficient; iOS's `iosPressRelease` lives there too). Android-only
   looks: `Button` and filled/tonal `IconButton` (40dp container + slop, 56dp `large`; corners morph full to `sm`
   while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),

@@ -128,7 +128,7 @@ function mixHex([top, bottom]: readonly [string, string], t: number) {
     .join("")}`;
 }
 
-/** The track title: Material's headlineSmall on Android, iOS's title 2. */
+/** The track title: the ink `title1` on Android (28/700), iOS's title 2. */
 const TITLE_VARIANT = Platform.select<TextVariant>({
   android: "title1",
   default: "title2",

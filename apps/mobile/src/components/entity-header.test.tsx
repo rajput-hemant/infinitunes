@@ -1,6 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
 import { getColors } from "react-native-image-colors";
 
@@ -15,7 +15,7 @@ import {
 } from "~/lib/download-store";
 import { tap } from "~/lib/haptics";
 import { renderScreen } from "~/test/render";
-import { colors, translucentFill } from "~/theme/tokens";
+import { colors, sizes, translucentFill } from "~/theme/tokens";
 
 import { findsNoSwatch } from "../../__mocks__/react-native-image-colors";
 import { EntityHeader } from "./entity-header";
@@ -132,6 +132,38 @@ describe("EntityHeader", () => {
     await fireEvent.press(shuffle);
     expect(onPlay).toHaveBeenCalledTimes(1);
     expect(onShuffle).toHaveBeenCalledTimes(1);
+  });
+
+  it("sets Android's words on the leading edge and ends the row with a large filled Play", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    const onPlay = jest.fn();
+    await renderScreen(
+      <EntityHeader
+        image={IMAGE}
+        title="Album"
+        eyebrow="Album · 2007"
+        onPlay={onPlay}
+        onShuffle={jest.fn()}
+        menu={{ rows }}
+      />,
+    );
+
+    expect(
+      screen.getByRole("header", { name: "Album" }).props.className,
+    ).toContain("text-left");
+    expect(screen.getByText("Album · 2007")).toHaveStyle({
+      textTransform: "uppercase",
+    });
+    const row = within(screen.getByTestId("header-actions"));
+    const buttons = row.getAllByRole("button");
+    const play = row.getByRole("button", { name: "Play" });
+    expect(buttons.at(-1)).toBe(play);
+    expect(play).toHaveStyle({ width: sizes.row, height: sizes.row });
+    // Download waits in the bar's menu until a run starts.
+    expect(row.queryByRole("button", { name: "Download Album" })).toBeNull();
+
+    await fireEvent.press(play);
+    expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
   it("downloads every song from the Download button", async () => {
