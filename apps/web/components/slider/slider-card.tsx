@@ -85,7 +85,7 @@ export function SliderCard(props: SliderCardProps) {
       <div
         data-morph-art=""
         className={cn(
-          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:-translate-y-0.5 group-hover:shadow-md group-active:translate-y-0 group-active:scale-98",
+          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:-translate-y-0.5 group-hover:shadow-md group-focus-within:shadow-md group-active:translate-y-0 group-active:scale-98",
           aspect === "square" ? "aspect-square" : "aspect-video",
           round ? "rounded-full" : "rounded-md",
         )}
@@ -106,6 +106,7 @@ export function SliderCard(props: SliderCardProps) {
           fallback={getPlaceholderSrc(type)}
           width={200}
           height={200}
+          sizes="auto, (min-width: 2560px) 208px, (min-width: 1920px) 192px, (min-width: 1280px) 176px, (min-width: 768px) 160px, 40vw"
           alt=""
           loading={priority ? "eager" : undefined}
           fetchPriority={priority ? "high" : undefined}

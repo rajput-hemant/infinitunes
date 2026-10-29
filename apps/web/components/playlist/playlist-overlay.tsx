@@ -60,9 +60,11 @@ export function PlaylistCaption({
 
   return (
     <div className="mt-2 min-w-0">
-      <h3 className="truncate font-semibold">{name}</h3>
+      <h3 className="truncate text-[0.8125rem] leading-5 font-semibold">
+        {name}
+      </h3>
 
-      <span className="block truncate text-muted-foreground">
+      <span className="block truncate text-xs leading-4 text-muted-foreground">
         {description || `${songCount} ${songCount === 1 ? "song" : "songs"}`}
       </span>
     </div>
@@ -111,8 +113,10 @@ export function PendingPlaylistCards({ serverIds }: { serverIds: string[] }) {
           <Skeleton className="absolute inset-0 -z-10 size-full" />
         </div>
         <div className="mt-2 min-w-0">
-          <h3 className="truncate font-semibold">{playlist.name}</h3>
-          <span className="block truncate text-muted-foreground">
+          <h3 className="truncate text-[0.8125rem] leading-5 font-semibold">
+            {playlist.name}
+          </h3>
+          <span className="block truncate text-xs leading-4 text-muted-foreground">
             {playlist.real ? "0 songs" : "Creating..."}
           </span>
         </div>

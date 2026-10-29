@@ -12,7 +12,7 @@ export const searchUi = {
   kbd: "inline-grid h-5 min-w-5 place-items-center rounded-[calc(var(--r-sm)*0.5)] bg-card px-1 text-[0.6875rem] leading-4 font-medium text-muted-foreground inset-ring inset-ring-border",
   chipsRow:
     "-m-0.5 flex gap-2 overflow-x-auto p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-  chip: "inline-flex flex-none items-center gap-2 bg-fill px-3 text-[0.8125rem] leading-5 font-medium whitespace-nowrap transition-[background-color,transform] duration-fast hover:bg-fill-2 active:scale-[0.96] motion-reduce:active:scale-100",
+  chip: "pointer-coarse:min-h-11 pointer-coarse:min-w-11 outline-none focus-visible:ring-2 focus-visible:ring-ring inline-flex flex-none items-center gap-2 bg-fill px-3 text-[0.8125rem] leading-5 font-medium whitespace-nowrap transition-[background-color,transform] duration-fast hover:bg-fill-2 active:scale-[0.96] motion-reduce:active:scale-100",
   chipActive: "bg-foreground text-background hover:bg-foreground",
   pageTitle:
     "font-heading text-[1.75rem]/8 font-bold tracking-tight text-foreground md:text-[2rem]/10",
