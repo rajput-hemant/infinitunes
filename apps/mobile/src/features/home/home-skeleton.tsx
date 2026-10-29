@@ -1,10 +1,7 @@
 import { Platform, View } from "react-native";
 
 import { HERO } from "~/components/media-card";
-import {
-  PICK_TILE_CLASS,
-  PICK_TILE_HEIGHT,
-} from "~/components/quick-pick-tile";
+import { pickTileClass, PICK_TILE_HEIGHT } from "~/components/quick-pick-tile";
 import { useHeroWidth } from "~/components/shelf";
 import {
   CardTextSkeleton,
@@ -73,7 +70,7 @@ export function QuickPicksSkeleton() {
         {range(PICK_TILES).map((tile) => (
           <View
             key={tile}
-            className={PICK_TILE_CLASS}
+            className={pickTileClass()}
             style={{ width, minHeight: PICK_TILE_HEIGHT }}
           >
             {/* Android's art is inset at `sm`; iOS's is flush, clipped by the tile. */}

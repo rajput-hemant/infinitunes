@@ -26,11 +26,12 @@ import { Text } from "./ui/text";
 export type MediaCardVariant = "card" | "hero";
 
 /**
- * The hero's art corner and lines: Material's extra-large (28) corner and two
- * lines (eyebrow, title) at YouTube Music density; iOS keeps `lg` and the subtitle.
+ * The hero's art corner and lines: `lg` on both (on Android the card shape,
+ * leaving `xl` to the header and Now Playing); Android drops the subtitle for
+ * two lines (eyebrow, title) at YouTube Music density.
  */
 export const HERO = Platform.select({
-  android: { radius: "xl", subtitle: false },
+  android: { radius: "lg", subtitle: false },
   default: { radius: "lg", subtitle: true },
 } as const);
 
@@ -170,12 +171,10 @@ export const MediaCard = memo(function MediaCard({
             // Android: a bounded ripple over the card, its top corners the
             // art's; the bottom stays square so the subtitle is never clipped.
             android_ripple={{ color: ripple, foreground: true }}
+            // Cards and the hero share Android's `lg` card shape.
             className={cx(
               "gap-2",
-              Platform.OS === "android" &&
-                (hero
-                  ? "overflow-hidden rounded-t-xl"
-                  : "overflow-hidden rounded-t-md"),
+              Platform.OS === "android" && "overflow-hidden rounded-t-lg",
             )}
             style={{ width: edge }}
           >

@@ -35,21 +35,21 @@ type QuickPickTileProps = {
   item?: CardItem;
 };
 
-/** Material's tiles sit on a tonal surface container; iOS's on a translucent fill. */
-const MATERIAL = Platform.OS === "android";
-
 /**
- * Android: Material 3 Expressive's 56dp tile with the 48dp art inset 4dp at
- * `sm` corners, concentric with the tile's `md`. iOS: a 48pt tile with the
- * art flush at its start, clipped by the tile. `QuickPicksSkeleton` draws
- * the same box.
+ * Android: an ink tile, a hairline `outlineVariant` outline on the page (no
+ * tonal box), 56dp with the 48dp art inset 4dp at `sm` corners, concentric
+ * with the tile's `md`. iOS: a 48pt tile on a translucent fill with the art
+ * flush at its start, clipped by the tile. Read per call so tests can switch
+ * the platform. `QuickPicksSkeleton` draws the same box.
  */
-export const PICK_TILE_CLASS = cx(
-  "flex-row items-center gap-3 overflow-hidden rounded-md pr-2",
-  MATERIAL ? "bg-card pl-1" : "bg-fill",
-);
-export const PICK_TILE_HEIGHT = MATERIAL ? sizes.row : art.pick;
-const FLUSH_ART = MATERIAL ? undefined : { borderRadius: 0 };
+export function pickTileClass() {
+  return cx(
+    "flex-row items-center gap-3 overflow-hidden rounded-md pr-2",
+    Platform.OS === "android" ? "border border-border pl-1" : "bg-fill",
+  );
+}
+export const PICK_TILE_HEIGHT =
+  Platform.OS === "android" ? sizes.row : art.pick;
 
 /**
  * A compact two-column tile (home's quick picks, browse): art or an icon at
@@ -65,6 +65,7 @@ export function QuickPickTile({
   accessibilityHint,
   item,
 }: QuickPickTileProps) {
+  const material = Platform.OS === "android";
   const entries = useCardMenuEntries(item);
   const press = usePressScale(0.97);
   const ripple = usePalette()["fill-2"];
@@ -75,7 +76,11 @@ export function QuickPickTile({
     <>
       {"artwork" in leading ? (
         <View className={dimmed ? "opacity-50" : undefined}>
-          <Artwork image={leading.artwork} size="pick" style={FLUSH_ART} />
+          <Artwork
+            image={leading.artwork}
+            size="pick"
+            style={material ? undefined : { borderRadius: 0 }}
+          />
         </View>
       ) : (
         // The art's place: a fill over the tile's own surface, so it tints
@@ -84,7 +89,7 @@ export function QuickPickTile({
           testID="pick-icon-cell"
           className={cx(
             "items-center justify-center bg-fill-2",
-            MATERIAL ? "rounded-sm" : "self-stretch",
+            material ? "rounded-sm" : "self-stretch",
             dimmed && "opacity-50",
           )}
           style={{ width: art.pick, minHeight: art.pick }}
@@ -93,10 +98,10 @@ export function QuickPickTile({
         </View>
       )}
       <Text
-        variant={MATERIAL ? "label" : "footnote"}
+        variant={material ? "label" : "footnote"}
         numberOfLines={2}
         className="flex-1"
-        style={MATERIAL ? undefined : { fontWeight: "600" }}
+        style={material ? undefined : { fontWeight: "600" }}
       >
         {title}
       </Text>
@@ -109,7 +114,7 @@ export function QuickPickTile({
       <View
         accessible
         accessibilityLabel={accessibilityLabel}
-        className={PICK_TILE_CLASS}
+        className={pickTileClass()}
         style={style}
       >
         {content}
@@ -132,7 +137,7 @@ export function QuickPickTile({
       {...cardAccessibilityActions(entries)}
       // Android: a bounded ripple, clipped by the tile's own corners.
       android_ripple={{ color: ripple, foreground: true }}
-      className={PICK_TILE_CLASS}
+      className={pickTileClass()}
       style={style}
     >
       {content}

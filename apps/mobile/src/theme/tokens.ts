@@ -289,19 +289,42 @@ export function playerArtSize(windowWidth: number): number {
   return Math.min(windowWidth - 2 * space.xl, 360);
 }
 
-/** Artwork radius per size. Round types (artists, stations) are `full` at every size. */
-export const artRadius: Record<ArtSize, Radius> = {
-  row: "sm",
-  mini: "sm",
-  pick: "sm",
-  tile: "sm",
-  avatar: "full",
-  card: "md",
-  feature: "md",
-  header: "lg",
-  hero: "lg",
-  player: "lg",
+/**
+ * Artwork radius per size and platform. Round types (artists, stations) are
+ * `full` at every size. Android uses three steps on a screen: `sm` for small
+ * art, `lg` for cards and the hero, `xl` for the two biggest pictures (the
+ * entity header and Now Playing).
+ */
+export const artRadii: Record<"ios" | "android", Record<ArtSize, Radius>> = {
+  ios: {
+    row: "sm",
+    mini: "sm",
+    pick: "sm",
+    tile: "sm",
+    avatar: "full",
+    card: "md",
+    feature: "md",
+    header: "lg",
+    hero: "lg",
+    player: "lg",
+  },
+  android: {
+    row: "sm",
+    mini: "sm",
+    pick: "sm",
+    tile: "sm",
+    avatar: "full",
+    card: "lg",
+    feature: "md",
+    header: "xl",
+    hero: "lg",
+    player: "xl",
+  },
 };
+
+/** This platform's artwork radii (`EXPO_OS` is inlined at build time). */
+export const artRadius: Record<ArtSize, Radius> =
+  process.env.EXPO_OS === "android" ? artRadii.android : artRadii.ios;
 
 /**
  * Control, row and gutter sizes in points: the web's touch-screen

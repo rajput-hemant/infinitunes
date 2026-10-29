@@ -13,6 +13,7 @@ import {
   ACCENT_IDS,
   androidDynamicColors,
   androidEmphasizedWeights,
+  artRadii,
   COLOR_TOKENS,
   colors,
   iosSystemColors,
@@ -202,6 +203,22 @@ describe("swipeFills", () => {
       );
     },
   );
+});
+
+describe("artwork radii", () => {
+  it("give Android three art shapes: sm, lg for cards, xl for the biggest", () => {
+    expect(artRadii.android.row).toBe("sm");
+    expect(artRadii.android.card).toBe("lg");
+    expect(artRadii.android.hero).toBe("lg");
+    expect(artRadii.android.header).toBe("xl");
+    expect(artRadii.android.player).toBe("xl");
+  });
+
+  it("leave iOS's unchanged", () => {
+    expect(artRadii.ios.card).toBe("md");
+    expect(artRadii.ios.header).toBe("lg");
+    expect(artRadii.ios.player).toBe("lg");
+  });
 });
 
 describe("Android ink type scale", () => {

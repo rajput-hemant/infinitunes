@@ -16,7 +16,7 @@ type BrowseTileProps = {
 };
 
 /**
- * A category or language tile that opens its list: a `fill` tile with the
+ * A category or language tile that opens its list: a `fill` (iOS) or outlined (Android) tile with the
  * title, and the list's cover at `tile` size inside its end edge, clipped to
  * the tile's corners. It grows with the title at larger text sizes and sinks
  * under the finger like a quick pick.
@@ -28,9 +28,11 @@ export function BrowseTile({ href, title, width, image }: BrowseTileProps) {
       href={href}
       accessibilityLabel={title}
       className={cx(
-        "flex-row items-center gap-3 overflow-hidden rounded-md active:opacity-80",
-        // Material tiles sit on a tonal surface container, as quick picks do.
-        Platform.OS === "android" ? "bg-card" : "bg-fill",
+        "flex-row items-center gap-3 overflow-hidden active:opacity-80",
+        // Android: an ink tile at the card shape (an `outlineVariant` hairline, no tonal box).
+        Platform.OS === "android"
+          ? "rounded-lg border border-border"
+          : "rounded-md bg-fill",
       )}
       style={{ minHeight: art.tile }}
     >

@@ -37,6 +37,7 @@ export function TopResultCard({ item, onPress }: TopResultCardProps) {
   return (
     <View>
       <SectionHeader title="Top Result" />
+      {/* Keeps its fill on Android: it marks a state ("this one"), unlike the ink tiles. */}
       <View className="mx-page flex-row items-center overflow-hidden rounded-lg bg-card">
         <Pressable
           onPress={() => onPress(item)}

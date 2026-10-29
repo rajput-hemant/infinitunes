@@ -66,6 +66,9 @@ describe("QuickPickTile", () => {
       "className",
       expect.stringContaining("overflow-hidden rounded-md"),
     );
+    // An ink tile: an outline on the page, never a tonal box.
+    expect(tile.props.className).toMatch(/\bborder border-border\b/);
+    expect(tile.props.className).not.toMatch(/\bbg-card\b/);
   });
 
   it("tints the icon's cell with a fill over the tile, not a second surface", async () => {
