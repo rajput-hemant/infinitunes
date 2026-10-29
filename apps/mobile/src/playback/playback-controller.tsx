@@ -321,11 +321,9 @@ export function PlaybackController() {
     return () => subscription.remove();
   }, [acceptsStatus, advanceAfterEnd, streamQuality]);
 
-  // A pause from outside the app (headset, lock screen, keyboard media key)
-  // is not a JS action, and a paused engine ticks no more status: the one
-  // event that carried it can be missed or read before the engine settled
-  // (iOS has no observer on the play state itself). While the UI says playing,
-  // ask the engine what it is doing, as a status would.
+  // Keep polling as a fallback for Android and older native builds when a
+  // system pause event is missed or arrives before the engine settles.
+  // Patched iOS builds also report timeControlStatus changes directly.
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => {
