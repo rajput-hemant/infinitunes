@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
@@ -15,6 +15,7 @@ import { HomeHeader } from "./home-header";
 import { buildHomeModel, isHomeEmpty } from "./home-model";
 import type { HomeModel } from "./home-model";
 import { HomeSkeleton } from "./home-skeleton";
+import { readHomeSnapshot, saveHomeSnapshot } from "./home-snapshot";
 import { QuickPicks } from "./quick-picks";
 
 /**
@@ -23,10 +24,22 @@ import { QuickPicks } from "./quick-picks";
  */
 export function HomeFeed() {
   const lang = useCatalogLang();
+  const queryClient = useQueryClient();
+  const options = trpc.home.home.queryOptions({ lang });
   const home = useQuery({
-    ...trpc.home.home.queryOptions({ lang }),
+    ...options,
+    // A cold start shows the last feed at once; an older one refetches.
+    initialData: () => readHomeSnapshot(lang)?.data,
+    initialDataUpdatedAt: () => readHomeSnapshot(lang)?.savedAt,
     select: buildHomeModel,
   });
+
+  // Store the raw response (`home.data` is the selected model) once it is new.
+  const { dataUpdatedAt } = home;
+  useEffect(() => {
+    const data = queryClient.getQueryData(options.queryKey);
+    if (data) saveHomeSnapshot(lang, data, dataUpdatedAt);
+  }, [queryClient, lang, options.queryKey, dataUpdatedAt]);
 
   return (
     <ScreenScrollView

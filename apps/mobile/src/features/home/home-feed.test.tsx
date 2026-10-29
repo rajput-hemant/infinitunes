@@ -13,10 +13,16 @@ import { chooseCardAction, renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { HomeFeed } from "./home-feed";
+import {
+  forgetHomeSnapshot,
+  readHomeSnapshot,
+  saveHomeSnapshot,
+} from "./home-snapshot";
 
 const home = procedure("home.home");
 
 beforeEach(() => {
+  forgetHomeSnapshot();
   playerStore.setState({
     queue: [],
     currentIndex: 0,
@@ -26,6 +32,29 @@ beforeEach(() => {
 });
 
 describe("HomeFeed", () => {
+  it("shows the last launch data while the new one loads", async () => {
+    saveHomeSnapshot(undefined, rawLaunchData(), Date.now() - 60 * 60 * 1000);
+    home.mockReturnValue(new Promise(() => {}));
+    await renderScreen(<HomeFeed />);
+
+    expect(
+      await screen.findByRole("link", { name: /^Featured Mix/ }),
+    ).toBeOnTheScreen();
+    expect(screen.queryAllByLabelText("Loading")).toHaveLength(0);
+    // An hour-old feed is stale: it is fetched again behind the shelves.
+    expect(home).toHaveBeenCalledWith({ lang: undefined });
+  });
+
+  it("keeps a fresh launch data for the next start, per languages", async () => {
+    home.mockResolvedValue(rawLaunchData());
+    await renderScreen(<HomeFeed />);
+    await screen.findByRole("link", { name: /^Featured Mix/ });
+
+    await waitFor(() => expect(readHomeSnapshot(undefined)).toBeDefined());
+    expect(readHomeSnapshot(undefined)?.data).toEqual(rawLaunchData());
+    expect(readHomeSnapshot("tamil")).toBeUndefined();
+  });
+
   it("asks for the listener's languages", async () => {
     preferencesStore.getState().setLanguages(["tamil", "telugu"]);
     home.mockResolvedValue(rawLaunchData());
