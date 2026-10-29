@@ -41,7 +41,7 @@ describe("HomeFeed", () => {
       await screen.findByRole("link", { name: /^Featured Mix/ }),
     ).toBeOnTheScreen();
     expect(screen.queryAllByLabelText("Loading")).toHaveLength(0);
-    // An hour-old feed is stale: it is fetched again behind the shelves.
+    // The current feed is still asked for behind the stored shelves.
     expect(home).toHaveBeenCalledWith({ lang: undefined });
   });
 
