@@ -49,7 +49,11 @@ export function HomeFeed() {
   const scrolledBar = useScrolledBar();
   const loaded = home.data && !isHomeEmpty(home.data);
   const renderShelf = useCallback(
-    ({ item }: { item: HomeModel["shelves"][number] }) => <Shelf {...item} />,
+    ({
+      item: { key: _key, ...shelf },
+    }: {
+      item: HomeModel["shelves"][number];
+    }) => <Shelf {...shelf} />,
     [],
   );
   const content = (

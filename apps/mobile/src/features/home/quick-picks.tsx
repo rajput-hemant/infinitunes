@@ -1,16 +1,12 @@
 import type { CardItem } from "@infinitunes/types";
-import { useFonts } from "expo-font";
-import { useState } from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 
 import { QuickPickTile } from "~/components/quick-pick-tile";
 import { SectionHeader } from "~/components/section-header";
-import { SectionHeaderSkeleton } from "~/components/skeletons";
 import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { usePending } from "~/lib/use-pending";
 import { entityHref } from "~/navigation/entity-href";
 
-import { QuickPicksSkeleton } from "./home-skeleton";
 import { playSurprise } from "./play-home";
 
 /**
@@ -19,34 +15,7 @@ import { playSurprise } from "./play-home";
  */
 type QuickPicksProps = { items: readonly CardItem[] };
 
-export function QuickPicks(props: QuickPicksProps) {
-  return Platform.OS === "android" ? (
-    <AndroidQuickPicks {...props} />
-  ) : (
-    <QuickPickItems {...props} />
-  );
-}
-
-function AndroidQuickPicks(props: QuickPicksProps) {
-  const [fonts] = useState(() => {
-    // Keep Android's bundled font off the iOS module-evaluation path.
-    const {
-      default: font,
-    }: typeof import("expo-symbols/androidWeights/regular") = require("expo-symbols/androidWeights/regular");
-    return { [font.name]: font.font };
-  });
-  const [loaded, error] = useFonts(fonts);
-  if (!loaded && !error)
-    return (
-      <>
-        <SectionHeaderSkeleton />
-        <QuickPicksSkeleton />
-      </>
-    );
-  return <QuickPickItems {...props} />;
-}
-
-function QuickPickItems({ items }: QuickPicksProps) {
+export function QuickPicks({ items }: QuickPicksProps) {
   const { width } = useGrid("picks");
   // A tap while a batch is loading is ignored.
   const { run } = usePending();
