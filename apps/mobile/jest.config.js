@@ -24,6 +24,8 @@ const reactDir = path.dirname(require.resolve("react/package.json"));
  */
 module.exports = {
   preset: "jest-expo",
+  // Several agents run this suite at once on one machine: leave cores for the desktop.
+  maxWorkers: process.env.CI ? "100%" : "25%",
   transformIgnorePatterns: transformIgnorePatterns.map((pattern) =>
     pattern.replace(
       "(.pnpm|",
