@@ -1,7 +1,7 @@
 import type { SongRowItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { ListRenderItem } from "@shopify/flash-list";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
@@ -73,6 +73,9 @@ export function TrackList({ rows, numbered = false }: TrackListProps) {
   );
 }
 
+// Keep the first rows with the header while FlashList measures its cells.
+const INITIAL_TRACKS = 6;
+
 type TrackListPageProps = TrackListProps & {
   /** Above the songs: the entity header. */
   header: ReactElement;
@@ -92,20 +95,39 @@ export function TrackListPage({
   footer,
 }: TrackListPageProps) {
   const listProps = useDetailListProps();
+  const remaining = useMemo(() => rows.slice(INITIAL_TRACKS), [rows]);
   const renderItem = useCallback<ListRenderItem<SongRowItem>>(
-    ({ index }) => <TrackRow rows={rows} index={index} numbered={numbered} />,
+    ({ index }) => (
+      <TrackRow
+        rows={rows}
+        index={index + INITIAL_TRACKS}
+        numbered={numbered}
+      />
+    ),
     [rows, numbered],
   );
 
   return (
     <FlashList
       testID="track-list"
-      data={rows}
+      data={remaining}
       keyExtractor={trackKey}
       renderItem={renderItem}
-      ListHeaderComponent={header}
+      ListHeaderComponent={
+        <>
+          {header}
+          {rows.slice(0, INITIAL_TRACKS).map((row, index) => (
+            <TrackRow
+              key={trackKey(row, index)}
+              rows={rows}
+              index={index}
+              numbered={numbered}
+            />
+          ))}
+        </>
+      }
       ListFooterComponent={footer}
-      ListEmptyComponent={<NoSongs />}
+      ListEmptyComponent={rows.length === 0 ? <NoSongs /> : null}
       {...listProps}
     />
   );
