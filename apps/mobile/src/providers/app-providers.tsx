@@ -30,14 +30,15 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <GestureHandlerRootView style={styles.root}>
       {/* Material You content colours on Android 12+, under every screen. */}
       <DynamicColorRoot>
-        <ThemeRoot>
-          <QueryClientProvider client={queryClient}>
+        {/* The query client is outside ThemeRoot: the playing accent reads the cover's colours. */}
+        <QueryClientProvider client={queryClient}>
+          <ThemeRoot>
             <ThemeProvider value={navigationTheme}>
               {children}
               <StatusBar style="auto" />
             </ThemeProvider>
-          </QueryClientProvider>
-        </ThemeRoot>
+          </ThemeRoot>
+        </QueryClientProvider>
       </DynamicColorRoot>
     </GestureHandlerRootView>
   );

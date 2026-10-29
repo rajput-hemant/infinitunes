@@ -9,6 +9,7 @@ import type { ColorValue } from "react-native";
 import { withAccent } from "./accent-palette";
 import { paletteFor } from "./android-colors";
 import { useAccent } from "./appearance";
+import { usePlayingAccent } from "./playing-accent";
 import { ACCENT_TOKENS, iosSystemColors } from "./tokens";
 import type { ColorToken, Palette } from "./tokens";
 
@@ -42,8 +43,12 @@ export function useTokenColor(token: ColorToken): ColorValue {
   return systemColor ? platformColor(systemColor) : palette[token];
 }
 
-/** The accent as the tab bar's tint, or undefined to keep the system tint. */
+/**
+ * The tab bar's tint: an explicit accent, else (Android) the playing accent,
+ * else undefined to keep the system tint.
+ */
 export function useTabAccent(): string | undefined {
   const palette = usePalette();
-  return useAccent() === "default" ? undefined : palette.primary;
+  const playing = usePlayingAccent();
+  return useAccent() === "default" ? playing?.primary : palette.primary;
 }

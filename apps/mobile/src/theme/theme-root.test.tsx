@@ -17,6 +17,12 @@ jest.mock("./android-colors", () => ({
     jest.requireActual("./tokens").colors[scheme],
 }));
 
+const PLAYING = { primary: "#9ecaff", foreground: "#003258" };
+let mockPlaying: typeof PLAYING | undefined;
+jest.mock("./playing-accent", () => ({
+  usePlayingAccent: () => mockPlaying,
+}));
+
 function rootVariables(): Record<string, string> {
   const style = [screen.root?.props.style].flat(Infinity) as {
     variables?: Record<string, string>;
@@ -27,6 +33,32 @@ function rootVariables(): Record<string, string> {
 describe("ThemeRoot (Android)", () => {
   beforeEach(() => {
     appearanceStore.getState().setAccent("default");
+    mockPlaying = undefined;
+  });
+
+  it("takes primary from what is playing, under the default accent", async () => {
+    mockPlaying = PLAYING;
+    await render(
+      <ThemeRoot>
+        <Text>Inside</Text>
+      </ThemeRoot>,
+    );
+    expect(rootVariables()).toMatchObject({
+      "--primary": PLAYING.primary,
+      "--primary-foreground": PLAYING.foreground,
+    });
+    expect(rootVariables()).not.toHaveProperty("--card");
+  });
+
+  it("lets an explicit accent win over the playing one", async () => {
+    mockPlaying = PLAYING;
+    appearanceStore.getState().setAccent("teal");
+    await render(
+      <ThemeRoot>
+        <Text>Inside</Text>
+      </ThemeRoot>,
+    );
+    expect(rootVariables()["--primary"]).not.toBe(PLAYING.primary);
   });
 
   it("leaves the wallpaper colours alone without an accent", async () => {
