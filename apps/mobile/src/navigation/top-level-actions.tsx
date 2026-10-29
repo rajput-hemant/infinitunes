@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import type { NativeStackNavigationOptions } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
@@ -69,11 +69,14 @@ function TopLevelActions() {
  * The root screens' header options. iOS uses native items that share one glass
  * capsule (the system default), with the page title as a leading item (Apple
  * Music's layout: title left, actions right on one row).
- * Other platforms keep the view and the system title. A hook: the profile
- * button follows the session.
+ * Other platforms keep the view and the system title, or with `titleInPage`
+ * (Android only: the page draws its own display title, Home's greeting) an
+ * empty bar with the actions alone; `title` still names the screen for the
+ * back button's menu. A hook: the profile button follows the session.
  */
 export function useTopLevelHeaderOptions(
   title: string,
+  { titleInPage = false }: { titleInPage?: boolean } = {},
 ): Pick<
   NativeStackNavigationOptions,
   | "title"
@@ -86,7 +89,13 @@ export function useTopLevelHeaderOptions(
   const { data, isPending } = authClient.useSession();
   const signedIn = Boolean(data?.user);
 
-  if (!hasHeaderBarItems) return { title, headerRight: TopLevelActions };
+  if (!hasHeaderBarItems) {
+    return {
+      title,
+      headerRight: TopLevelActions,
+      ...(titleInPage && Platform.OS === "android" ? { headerTitle: "" } : {}),
+    };
+  }
 
   return {
     title,

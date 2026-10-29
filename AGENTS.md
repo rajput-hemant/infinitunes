@@ -381,7 +381,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `Text emphasized`, a no-op on iOS; `Text uppercase` for eyebrows; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
   `MotionScheme.expressive()`, `damping` as a coefficient; iOS's `iosPressRelease` lives there too). Android-only
   looks: `Button` and filled/tonal `IconButton` (40dp container + slop, 56dp `large`; corners morph full to `sm`
-  while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),
+  while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp; `tabs` are filter chips with a check, other rows outlined assist chips), Home's greeting as an in-page `largeTitle` (`HomeTitle`, `titleInPage`),
   the dock's filled play circle and Now Playing's paused-square/playing-circle play button, Settings as a segmented
   list. One UI resolves `onSurfaceVariant` to `onSurface`; `withDynamicRoles` fades `muted-foreground` then (keep it).
   The top app bar is `surface`; a detail screen's bar shows its title only once the header art has scrolled

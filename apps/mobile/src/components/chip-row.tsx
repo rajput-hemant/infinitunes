@@ -27,27 +27,27 @@ type Chip = {
 };
 
 /**
- * Chip fills per platform: iOS fills the selected chip with the accent;
- * Material 3 filter chips are `secondaryContainer` when selected, outlined
- * otherwise.
+ * Chip looks: iOS fills the selected chip with the accent. Android's filter
+ * chips (`tabs`) are `secondaryContainer` with a check when selected; its
+ * assist chips (each one opens something) stay outlined with no check, the
+ * current one only in `foreground` text, since nothing on the page filters.
  */
-const CHIP_STYLE = Platform.select({
-  android: {
+const CHIP_STYLE = {
+  filter: {
     selected: { container: "bg-secondary", tone: "onSecondary" },
     idle: { container: "border border-border", tone: "muted" },
   },
-  default: {
+  assist: {
+    selected: { container: "border border-border", tone: "default" },
+    idle: { container: "border border-border", tone: "muted" },
+  },
+  ios: {
     selected: { container: "bg-primary", tone: "onPrimary" },
     idle: { container: "border border-border bg-fill", tone: "default" },
   },
-} as const);
+} as const;
 
-/**
- * Material 3's filter chip has the small shape (8dp), a label-large label and
- * a leading check while selected; iOS keeps capsules.
- */
-const MATERIAL = Platform.OS === "android";
-const CHIP_SHAPE = MATERIAL ? "rounded-sm" : "rounded-full";
+/** Material 3's chips have the small shape (8dp) and a label-large label; iOS keeps capsules. */
 const CHECK: SymbolName = { ios: "checkmark", android: "check" };
 
 type ChipRowProps = {
@@ -172,12 +172,14 @@ function ChipButton({
   const press = usePressScale();
   const onSecondary = useTokenColor("secondary-foreground");
   const ripple = usePalette()["fill-2"];
+  const material = Platform.OS === "android";
+  const look = material ? (tab ? "filter" : "assist") : "ios";
   const { container, tone } = chip.selected
-    ? CHIP_STYLE.selected
-    : CHIP_STYLE.idle;
+    ? CHIP_STYLE[look].selected
+    : CHIP_STYLE[look].idle;
   return (
     <Animated.View
-      style={MATERIAL ? undefined : press.style}
+      style={material ? undefined : press.style}
       onLayout={onLayout}
     >
       <Pressable
@@ -185,28 +187,29 @@ function ChipButton({
           if (!chip.selected) selection();
           chip.onPress?.();
         }}
-        onPressIn={MATERIAL ? undefined : press.onPressIn}
-        onPressOut={MATERIAL ? undefined : press.onPressOut}
-        android_ripple={MATERIAL ? { color: ripple } : undefined}
+        onPressIn={material ? undefined : press.onPressIn}
+        onPressOut={material ? undefined : press.onPressOut}
+        android_ripple={material ? { color: ripple } : undefined}
         hitSlop={CHIP_HIT_SLOP}
         accessibilityRole={tab ? "tab" : "button"}
         accessibilityState={{ selected: chip.selected }}
         className={cx(
           "min-h-8 flex-row items-center justify-center gap-1 px-3",
-          !MATERIAL && "active:opacity-80",
-          CHIP_SHAPE,
+          !material && "active:opacity-80",
+          material ? "rounded-sm" : "rounded-full",
           container,
         )}
       >
         {chip.icon ? (
           <Icon name={chip.icon} size="sm" weight="semibold" />
-        ) : MATERIAL && chip.selected ? (
+        ) : look === "filter" && chip.selected ? (
           <Icon name={CHECK} size="sm" color={onSecondary} />
         ) : null}
         <Text
-          variant={MATERIAL ? "label" : "footnote"}
+          variant={material ? "label" : "footnote"}
           tone={tone}
-          style={chip.selected && !MATERIAL ? SEMIBOLD : undefined}
+          emphasized={look === "assist" && chip.selected}
+          style={chip.selected && !material ? SEMIBOLD : undefined}
         >
           {chip.label}
         </Text>
