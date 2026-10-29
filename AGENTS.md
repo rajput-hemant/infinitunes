@@ -281,8 +281,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view; with `list` the page's own `TrackListPage` FlashList is that view, so album, playlist and mix rows are virtualized); a hook
   that finds nothing returns `null` from `select`. Spread `useDetailScrollProps()` (`components/detail/detail-scroll.tsx`)
-  on every detail scroll view: on Android it swaps the app bar to `card` with the title once the header art
-  scrolls under it. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
+  on every detail scroll view (it carries the content padding): Android's detail bar is transparent, the wash
+  runs under the status bar, content starts `useBarInset()` down, and `BarScrim` (the bar's `headerBackground`)
+  fades `background` in with the offset; the title appears once the header art scrolls under. Root screens keep
+  the bar in layout and fade `card` in the same way (`useScrolledBar`); never swap `headerStyle` on scroll. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
   `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
   `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified`, `onSubtitlePress` (a sole artist: the credit becomes an underlined link) and `menu`
   (`{ rows, radio?, extra? }`: play next, queue, add all to a playlist, radio, download all) and `like`. The `menu` and the
@@ -363,8 +365,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   stores hydrate before the first render), never secrets.
 - Native look per platform: `NativeTabs` and headers keep the system surfaces (glass on iOS 26, Material You on
   Android) and set no background colours; the only colour is the listener's accent, as `NativeTabs`'
-  `tintColor`/`indicatorColor` (`app/(tabs)/_layout.tsx`), plus Android's detail app bar, which
-  `useDetailScrollProps` tints to `card` on scroll. Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
+  `tintColor`/`indicatorColor` (`app/(tabs)/_layout.tsx`), plus Android's bar scrims (`BarScrim`). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours, Android 12+
   to Material You roles at runtime: `DynamicColorRoot` sets them as NativeWind `vars()` on a root view in
   `providers/app-providers.tsx`; never css-interop internals), colour JS props from

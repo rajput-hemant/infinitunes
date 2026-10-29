@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Platform, Share } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 
 import { renderWithProviders } from "~/test/render";
 
@@ -44,26 +45,31 @@ describe("detailHeaderOptions", () => {
     } as const;
     afterEach(() => jest.restoreAllMocks());
 
-    it("tints and titles Android's bar, and resets both at the top", () => {
+    it("titles Android's transparent bar over a scrim, and resets at the top", () => {
       jest.replaceProperty(Platform, "OS", "android");
+      const offset = { value: 0 } as SharedValue<number>;
 
-      const scrolled = detailHeaderOptions(item, "#e0e0e0");
+      const scrolled = detailHeaderOptions(item, true, undefined, offset);
       expect(scrolled.headerTitle).toBe("Udta Teer");
-      expect(scrolled.headerStyle).toEqual({ backgroundColor: "#e0e0e0" });
+      expect(scrolled.headerTransparent).toBe(true);
+      expect(scrolled.headerBackground).toBeInstanceOf(Function);
+      expect(scrolled.headerStyle).toBeUndefined();
 
       // Options merge: the reset keys must be present, not left out.
       const top = detailHeaderOptions(item);
-      expect(top).toHaveProperty("headerStyle", undefined);
       expect(top.headerTitle).toBe("");
+      expect(top.headerTransparent).toBe(true);
     });
 
-    it("titles iOS's bar once scrolled, without a tint", () => {
+    it("titles iOS's bar once scrolled, without a scrim", () => {
       jest.replaceProperty(Platform, "OS", "ios");
 
-      const scrolled = detailHeaderOptions(item, "#e0e0e0");
+      const scrolled = detailHeaderOptions(item, true);
       expect(scrolled.headerTitle).toBe("Udta Teer");
       expect(detailHeaderOptions(item).headerTitle).toBe("");
       expect(scrolled).not.toHaveProperty("headerStyle");
+      expect(scrolled).not.toHaveProperty("headerTransparent");
+      expect(scrolled).not.toHaveProperty("headerBackground");
     });
   });
 

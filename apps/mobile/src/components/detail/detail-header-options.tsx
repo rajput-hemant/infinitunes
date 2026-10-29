@@ -1,6 +1,8 @@
 import type { NativeStackNavigationOptions } from "expo-router";
 import { Platform, View } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 
+import { BarScrim } from "~/components/bar-scrim";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { NativeMenu } from "~/components/native-menu";
 import type { MenuEntry } from "~/components/native-menu";
@@ -51,18 +53,22 @@ function menuItems(entries: readonly MenuEntry[]): MenuItem {
  * overflow is `more_vert` after Share). With no item yet (loading, failed)
  * there is neither.
  *
- * Once the page scrolls under the bar (`scrolledColor` set, see
- * `useDetailScrollProps`), the bar shows the item's name, and on Android also
- * takes Material 3's scrolled container colour; both return at the top. Every key is always present: `<Stack.Screen options>` merges into the
- * previous options, so a left-out key would keep the old value.
+ * Once the page scrolls under the bar (`scrolled`, see
+ * `useDetailScrollProps`), the bar shows the item's name; it returns at the
+ * top. Android's bar is transparent so the header's wash reaches the status
+ * bar, and `scrim` (the page's scroll offset) fades the page background in
+ * behind it as content scrolls under (`BarScrim`). Every key is always
+ * present: `<Stack.Screen options>` merges into the previous options, so a
+ * left-out key would keep the old value.
  */
 export function detailHeaderOptions(
   item?: ShareableItem,
-  scrolledColor?: string,
+  scrolledUnder = false,
   menu?: HeaderMenu,
+  scrim?: SharedValue<number>,
 ): NativeStackNavigationOptions {
   const share = item && (() => shareItem(item));
-  const scrolled = item !== undefined && scrolledColor;
+  const scrolled = item !== undefined && scrolledUnder;
   const menuLabel = `More actions for ${menu?.title ?? ""}`;
   return {
     title: item?.name ?? "",
@@ -70,8 +76,9 @@ export function detailHeaderOptions(
     headerLargeTitle: false,
     ...(Platform.OS === "android"
       ? {
-          headerStyle: scrolled
-            ? { backgroundColor: scrolledColor }
+          headerTransparent: true,
+          headerBackground: scrim
+            ? () => <BarScrim offset={scrim} color="background" />
             : undefined,
         }
       : {}),

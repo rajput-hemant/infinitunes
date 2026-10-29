@@ -21,7 +21,6 @@ import {
 import { PagedFooter } from "~/components/paged-footer";
 import { SectionHeader } from "~/components/section-header";
 import { PullToRefresh } from "~/components/ui/refresh-control";
-import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
 import { ShowControls } from "./show-controls";
@@ -122,7 +121,6 @@ export function ShowContent({
       }
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
-      contentContainerStyle={{ paddingBottom: playerDockInset }}
       testID="show-list"
     />
   );

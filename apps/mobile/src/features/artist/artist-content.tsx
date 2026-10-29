@@ -7,7 +7,6 @@ import { useMemo, useState } from "react";
 import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { entityListKey } from "~/components/entity-list";
 import { PullToRefresh } from "~/components/ui/refresh-control";
-import { playerDockInset } from "~/navigation/player-dock";
 
 import { ArtistListHeader } from "./artist-list-header";
 import { renderArtistListItem } from "./artist-list-items";
@@ -69,7 +68,6 @@ export function ArtistContent({
       refreshControl={<PullToRefresh onRefresh={refresh} />}
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
-      contentContainerStyle={{ paddingBottom: playerDockInset }}
     />
   );
 }

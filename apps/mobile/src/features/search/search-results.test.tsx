@@ -17,9 +17,9 @@ import type { ReactElement } from "react";
 import { Platform, Text } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
+import { installedScrimOpacity } from "~/test/bar-scrim";
 import { scrollListTo } from "~/test/render";
 import { procedure, trpcError } from "~/test/trpc-mock";
-import { colors } from "~/theme/tokens";
 
 import { IdleSearch } from "./idle-search";
 import { searchHistoryStore } from "./search-history";
@@ -30,8 +30,6 @@ jest.mock("expo-router", () => ({
   ...jest.requireActual("expo-router"),
   useNavigation: () => ({ setOptions: mockSetOptions }),
 }));
-
-const tinted = { headerStyle: { backgroundColor: colors.light.card } };
 
 const initialPlayer = playerStore.getState();
 
@@ -237,7 +235,7 @@ describe("results of one type", () => {
     ).toBeOnTheScreen();
   });
 
-  it("tints the Android app bar once a list scrolls under it", async () => {
+  it("fades the Android bar scrim in once a list scrolls under it", async () => {
     jest.replaceProperty(Platform, "OS", "android");
     mockSetOptions.mockClear();
     procedure("search.byType").mockResolvedValue(page([rawSong()]));
@@ -246,7 +244,7 @@ describe("results of one type", () => {
 
     await scrollListTo("FA9LA & Friends", 40);
 
-    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
+    expect(await installedScrimOpacity(mockSetOptions)).toBe(1);
   });
 
   it("keeps the end note off while more pages remain", async () => {

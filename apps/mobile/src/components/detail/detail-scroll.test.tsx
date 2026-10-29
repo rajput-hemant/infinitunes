@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 
 import {
   DetailScrollContext,
@@ -21,9 +22,10 @@ describe("useDetailScrollProps", () => {
 
   it("reports scrolled only once past the header art's offset", async () => {
     const setScrolled = jest.fn();
+    const offset = { set: jest.fn() } as unknown as SharedValue<number>;
     const { result } = await renderHook(() => useDetailScrollProps(), {
       wrapper: ({ children }: { children: ReactNode }) => (
-        <DetailScrollContext value={setScrolled}>
+        <DetailScrollContext value={{ setScrolled, offset }}>
           {children}
         </DetailScrollContext>
       ),
@@ -36,5 +38,6 @@ describe("useDetailScrollProps", () => {
     result.current.onScroll?.(scrollTo(-40));
 
     expect(setScrolled.mock.calls).toEqual([[false], [false], [true], [false]]);
+    expect(jest.mocked(offset.set).mock.calls.at(-1)).toEqual([-40]);
   });
 });

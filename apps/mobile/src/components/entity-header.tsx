@@ -5,7 +5,7 @@ import { OnWash, nowPlayingWash } from "~/components/wash";
 import { usePlayerColors } from "~/lib/use-player-colors";
 import { artShadow, translucentFill } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
-import { useTokenColor } from "~/theme/use-palette";
+import { usePalette, useTokenColor } from "~/theme/use-palette";
 
 import type { CollectionMenuSpec } from "./collection-menu";
 import { DetailMenu } from "./detail/detail-menu";
@@ -31,8 +31,9 @@ const ART_SHADOW = Platform.select({
 export const ENTITY_TITLE_VARIANT: TextVariant = "title1";
 
 /**
- * How far the artwork wash runs up behind the bar and the overscroll, so the
- * tint meets the top of the screen. The page's list clips nothing above it.
+ * How far the artwork wash runs up behind the bar (Android's transparent bar
+ * and the status bar above it) and the overscroll, so the tint meets the top
+ * of the screen. The page's list clips nothing above it.
  */
 const WASH_BLEED = 400;
 
@@ -93,6 +94,10 @@ export function EntityHeader({
   const primary = useTokenColor("primary");
   const colors = usePlayerColors(image);
   const wash = colors?.wash[0];
+  const { background } = usePalette();
+  // Android ends on the page colour the bar scrim fades in; iOS's page is a
+  // UIKit system colour, so it keeps fading to clear.
+  const washEnd = Platform.OS === "android" ? background : `${wash}00`;
   const glass = translucentFill[useColorScheme() === "dark" ? "dark" : "light"];
   const songs = (menu?.rows ?? []).filter((row) => row.type === "song");
   return (
@@ -108,7 +113,7 @@ export function EntityHeader({
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundImage: `linear-gradient(180deg, ${wash} ${WASH_BLEED}px, ${wash}00 100%)`,
+              backgroundImage: `linear-gradient(180deg, ${wash} ${WASH_BLEED}px, ${washEnd} 100%)`,
             }}
           />
         ) : null}

@@ -2,11 +2,11 @@ import { rawAlbum } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
+import { installedScrimOpacity } from "~/test/bar-scrim";
 import { renderStack, scrollListTo } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
 import { favoritesRow } from "~/test/user-library";
-import { colors } from "~/theme/tokens";
 
 import { LikedCollectionScreen } from "./liked-collection-screen";
 
@@ -15,8 +15,6 @@ jest.mock("expo-router", () => ({
   ...jest.requireActual("expo-router"),
   useNavigation: () => ({ setOptions: mockSetOptions }),
 }));
-
-const tinted = { headerStyle: { backgroundColor: colors.light.card } };
 
 const albums = {
   "1": rawAlbum({ id: "1", title: "Udta Teer" }),
@@ -67,7 +65,7 @@ describe("LikedCollectionScreen", () => {
     expect(router.getPathname()).toBe("/album/rock-roll/Qw3rTy_");
   });
 
-  it("tints the Android app bar once the grid scrolls under it", async () => {
+  it("fades the Android bar scrim in once the grid scrolls under it", async () => {
     jest.replaceProperty(Platform, "OS", "android");
     mockSetOptions.mockClear();
     await renderLikedAlbums();
@@ -75,7 +73,7 @@ describe("LikedCollectionScreen", () => {
 
     await scrollListTo("Udta Teer", 40);
 
-    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
+    expect(await installedScrimOpacity(mockSetOptions)).toBe(1);
   });
 
   it("says so when nothing is liked", async () => {
