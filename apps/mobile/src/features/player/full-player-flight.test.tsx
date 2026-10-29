@@ -8,6 +8,7 @@ import { renderScreen } from "~/test/render";
 import { art, playerArtSize, space } from "~/theme/tokens";
 
 import { FullPlayer } from "./full-player";
+import * as queueRows from "./queue-row";
 
 let mockReducedMotion = false;
 jest.mock("react-native-reanimated", () => {
@@ -29,6 +30,12 @@ const AT_STAGE = (STAGE.width - HERO) / 2;
 const AT_HEADER = space.xl - (HERO - art.tile) / 2;
 
 type Node = NonNullable<typeof screen.root>;
+
+// The native resolver reads an element; Reanimated's web typings take no argument.
+const animatedStyleOf = getAnimatedStyle as unknown as (element: Node) => {
+  opacity?: number;
+  transform?: { translateX?: number; translateY?: number; scale?: number }[];
+};
 
 function nodes(predicate: (node: Node) => boolean) {
   const found: Node[] = [];
@@ -55,12 +62,7 @@ function slot(pointerEvents: "none" | "box-none") {
 /** Where the flying artwork sits: the one animated style that scales. */
 function artX(): number {
   for (const node of nodes((each) => "jestAnimatedStyle" in each.props)) {
-    // Its web typings take no argument; the native build reads the element.
-    const { transform } = (
-      getAnimatedStyle as unknown as (element: unknown) => {
-        transform?: { translateX?: number; scale?: number }[];
-      }
-    )(node);
+    const { transform } = animatedStyleOf(node);
     if (!transform?.some((entry) => entry.scale !== undefined)) continue;
     return (
       transform.find((entry) => entry.translateX !== undefined)?.translateX ??
@@ -88,6 +90,7 @@ beforeEach(() => {
 afterEach(() => {
   jest.clearAllTimers();
   jest.useRealTimers();
+  jest.restoreAllMocks();
 });
 
 it("does not restart a reversed flight when a late layout arrives", async () => {
@@ -120,6 +123,12 @@ it("crossfades instead of flying under reduced motion", async () => {
   await layOut(slot("box-none"), HEADER);
   // The compact slot at once: no flight waits on a frame.
   expect(artX()).toBe(AT_HEADER);
+  const pane = screen.getByTestId("player-queue-pane");
+  expect(animatedStyleOf(pane)).toMatchObject({
+    transform: [{ translateY: 0 }],
+  });
+  await act(async () => jest.advanceTimersByTime(240));
+  expect(animatedStyleOf(pane)).toMatchObject({ opacity: 1 });
 });
 
 it.each(["Up next", "Lyrics"])(
@@ -136,17 +145,59 @@ it.each(["Up next", "Lyrics"])(
   },
 );
 
-it("defers queue mounting and URL synchronization beyond the press", async () => {
+it("lays out the hidden queue before the press and preserves it across toggles", async () => {
+  playerStore
+    .getState()
+    .playTracks([
+      toSongRow(rawSong({ id: "a", title: "Alpha" })),
+      toSongRow(rawSong({ id: "b", title: "Bravo" })),
+    ]);
+  const renderRow = jest.spyOn(queueRows, "QueueRow");
   const app = await renderScreen(<FullPlayer />);
   await layOut(slot("none"), STAGE);
   await layOut(slot("box-none"), HEADER);
-  await fireEvent.press(screen.getByRole("button", { name: "Up next" }));
-  expect(screen.getByLabelText("Loading player view")).toBeOnTheScreen();
-  expect(screen.queryByText("Up next · 0")).toBeNull();
+  const hidden = { includeHiddenElements: true };
+  const list = screen.getByTestId("reorderable-list", hidden);
+  expect(screen.queryByText("Up next · 1")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Bravo" })).toBeNull();
+  expect(renderRow).toHaveBeenCalled();
+  renderRow.mockClear();
+  const toggle = screen.getByRole("button", { name: "Up next" });
+  await fireEvent.press(toggle);
+  expect(screen.queryByLabelText("Loading player view")).toBeNull();
+  expect(screen.getByText("Up next · 1")).toBeOnTheScreen();
+  expect(screen.getByTestId("reorderable-list")).toBe(list);
   expect(app.getSearchParams()).toEqual({});
   await act(async () => jest.advanceTimersByTime(48));
-  expect(screen.getByText("Up next · 0")).toBeOnTheScreen();
+  expect(app.getSearchParams()).toEqual({});
+  expect(renderRow).not.toHaveBeenCalled();
+  await act(async () => jest.advanceTimersByTime(400));
   expect(app.getSearchParams()).toEqual({ view: "queue" });
+  renderRow.mockClear();
+  await fireEvent.press(toggle);
+  expect(screen.queryByText("Up next · 1")).toBeNull();
+  expect(screen.getByTestId("reorderable-list", hidden)).toBe(list);
+  await fireEvent.press(toggle);
+  expect(screen.getByTestId("reorderable-list")).toBe(list);
+  expect(renderRow).not.toHaveBeenCalled();
+});
+
+it("opens a queue deep link with full-width rows immediately, without deferred mounting", async () => {
+  playerStore
+    .getState()
+    .playTracks([
+      toSongRow(rawSong({ id: "a", title: "Alpha" })),
+      toSongRow(rawSong({ id: "b", title: "Bravo" })),
+    ]);
+  await renderScreen(<FullPlayer />, { initialUrl: "/?view=queue" });
+  expect(screen.queryByLabelText("Loading player view")).toBeNull();
+  expect(screen.getByTestId("queue-row-menu-b")).toHaveStyle({ width: 390 });
+  expect(screen.getByTestId("queue-row-body")).toHaveStyle({ width: 390 });
+  expect(
+    animatedStyleOf(screen.getByTestId("player-queue-pane")),
+  ).toMatchObject({
+    opacity: 1,
+  });
 });
 
 it("cancels deferred content and URL writes on a rapid reversal", async () => {

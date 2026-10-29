@@ -161,7 +161,7 @@ function fly(target: number) {
   return withTiming(target, { duration: FLIGHT_MS, easing: EMPHASIZED });
 }
 
-/** Give the flight a frame before mounting native list/menu hosts or lyrics. */
+/** Give the flight a frame before mounting lyrics. */
 function DeferredContent({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -716,17 +716,28 @@ export function FullPlayer() {
 
   // The artwork's flight between the stage (0) and the compact header (1).
   const progress = useSharedValue(compact ? 1 : 0);
+  const queueProgress = useSharedValue(view === "queue" ? 1 : 0);
   const fade = useSharedValue(1);
   const slots: Slots = {
     stage: useSharedValue<LayoutRectangle | null>(null),
     header: useSharedValue<LayoutRectangle | null>(null),
   };
-  const destination = useRef(compact);
+  const destination = useRef(view);
   const animateView = useCallback(
     (next: PlayerView) => {
+      if (destination.current === next) return;
+      const wasCompact = destination.current !== "art";
       const nextCompact = next !== "art";
-      if (destination.current === nextCompact) return;
-      destination.current = nextCompact;
+      destination.current = next;
+      queueProgress.set(
+        withTiming(next === "queue" ? 1 : 0, {
+          duration:
+            next === "queue" ? (reduceMotion ? 200 : FLIGHT_MS - 80) : 140,
+          easing: EMPHASIZED,
+          reduceMotion: ReduceMotion.Never,
+        }),
+      );
+      if (wasCompact === nextCompact) return;
       const target = nextCompact ? 1 : 0;
       if (reduceMotion) {
         progress.set(target);
@@ -738,7 +749,7 @@ export function FullPlayer() {
         progress.set(fly(target));
       }
     },
-    [reduceMotion, progress, fade],
+    [reduceMotion, progress, fade, queueProgress],
   );
   const toggle = (next: PlayerView) => {
     const target = view === next ? "art" : next;
@@ -752,15 +763,23 @@ export function FullPlayer() {
   }, [linkedView, animateView]);
   useEffect(() => {
     if (view === linkedView) return;
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => {
+    // Route context updates re-render row menus. Keep that work out of the flight.
+    const timer = setTimeout(
+      () => {
         router.setParams({ view: view === "art" ? undefined : view });
-      });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [view, linkedView, router]);
+      },
+      reduceMotion ? 200 : FLIGHT_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [view, linkedView, router, reduceMotion]);
   const stageStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.get() }));
   const headerStyle = useAnimatedStyle(() => ({ opacity: progress.get() }));
+  const queueStyle = useAnimatedStyle(() => ({
+    opacity: queueProgress.get(),
+    transform: [
+      { translateY: reduceMotion ? 0 : space.lg * (1 - queueProgress.get()) },
+    ],
+  }));
 
   // The lyrics' box, and where it spans down the backdrop (0 top, 1 bottom).
   const hero = playerArtSize(width);
@@ -902,37 +921,39 @@ export function FullPlayer() {
                     <HeaderControls track={track} />
                   </View>
                 </GestureDetector>
-                {view === "queue" ? (
+                <View className="flex-1">
+                  {/* Keep native hosts and list geometry ready before the toggle. */}
                   <Animated.View
-                    key="queue"
-                    className="flex-1"
-                    entering={contentIn(reduceMotion)}
-                    exiting={contentOut}
+                    testID="player-queue-pane"
+                    style={[StyleSheet.absoluteFill, queueStyle]}
+                    pointerEvents={view === "queue" ? "auto" : "none"}
+                    accessibilityElementsHidden={view !== "queue"}
+                    importantForAccessibility={
+                      view === "queue" ? "auto" : "no-hide-descendants"
+                    }
                   >
-                    <DeferredContent>
-                      <QueueList />
-                    </DeferredContent>
+                    <QueueList />
                   </Animated.View>
-                ) : null}
-                {view === "lyrics" ? (
-                  <Animated.View
-                    key="lyrics"
-                    ref={slot}
-                    className="flex-1 px-6"
-                    onLayout={measureLyrics}
-                    entering={contentIn(reduceMotion)}
-                    exiting={contentOut}
-                  >
-                    <DeferredContent>
-                      <PlayerLyrics
-                        track={track}
-                        width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
-                        height={lyricsBox.height}
-                        edges={lyricEdges}
-                      />
-                    </DeferredContent>
-                  </Animated.View>
-                ) : null}
+                  {view === "lyrics" ? (
+                    <Animated.View
+                      key="lyrics"
+                      ref={slot}
+                      className="flex-1 px-6"
+                      onLayout={measureLyrics}
+                      entering={contentIn(reduceMotion)}
+                      exiting={contentOut}
+                    >
+                      <DeferredContent>
+                        <PlayerLyrics
+                          track={track}
+                          width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
+                          height={lyricsBox.height}
+                          edges={lyricEdges}
+                        />
+                      </DeferredContent>
+                    </Animated.View>
+                  ) : null}
+                </View>
               </Animated.View>
             </View>
           </View>

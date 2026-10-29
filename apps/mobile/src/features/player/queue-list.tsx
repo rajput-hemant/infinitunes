@@ -1,5 +1,6 @@
 import type { Queue } from "@infinitunes/types";
-import { Platform, View } from "react-native";
+import { memo } from "react";
+import { Platform, useWindowDimensions, View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
 import { DragHandle } from "~/components/drag-handle";
@@ -66,7 +67,9 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
  * it, the clear button to empty it), and a menu that saves the queue to a
  * playlist. The player's scrubber and transport stay below it.
  */
-export function QueueList() {
+export const QueueList = memo(function QueueList() {
+  // The player and its queue span the window, including in split view and rotation.
+  const { width } = useWindowDimensions();
   const queue = usePlayer((state) => state.queue);
   const currentIndex = usePlayer((state) => state.currentIndex);
   const { playAt, removeAt, clearUpNext, moveInQueue } = playerStore.getState();
@@ -112,6 +115,7 @@ export function QueueList() {
       renderItem={({ item, index }) => (
         <QueueRow
           song={item}
+          width={width}
           onPress={() => playAt(firstNext + index)}
           onRemove={() => {
             removeAt(firstNext + index);
@@ -140,4 +144,4 @@ export function QueueList() {
       }
     />
   );
-}
+});
