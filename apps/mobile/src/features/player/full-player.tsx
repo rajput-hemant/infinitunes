@@ -2,7 +2,14 @@ import type { Queue } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter, useTheme } from "expo-router";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ComponentRef, ReactNode } from "react";
 import {
   Platform,
@@ -41,6 +48,7 @@ import { SongMenu } from "~/components/song-menu";
 import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
+import { Spinner } from "~/components/ui/spinner";
 import {
   Backdrop,
   CROSSFADE_MS,
@@ -148,23 +156,25 @@ function settle(target: number) {
 const FLIGHT_MS = 420;
 /** Material's emphasized decelerate, close to Apple Music's flight: fast off, long settle. */
 const EMPHASIZED = Easing.bezier(0.2, 0, 0, 1);
-/** How long a flight waits for a destination slot that reports no new layout. */
-const LAYOUT_WAIT_MS = 34;
-
-/** The flight: one timing curve on both platforms (a spring's overshoot reads as a wobble on a scale). */
+/** The flight runs on the UI thread, independently of list mounting. */
 function fly(target: number) {
   return withTiming(target, { duration: FLIGHT_MS, easing: EMPHASIZED });
 }
 
-/** Starts the pending flight, if one waits. */
-function takeOff(
-  pending: { current: 0 | 1 | null },
-  progress: SharedValue<number>,
-) {
-  const target = pending.current;
-  if (target === null) return;
-  pending.current = null;
-  progress.set(fly(target));
+/** Give the flight a frame before mounting native list/menu hosts or lyrics. */
+function DeferredContent({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setReady(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return ready ? (
+    children
+  ) : (
+    <Spinner accessibilityLabel="Loading player view" />
+  );
 }
 
 /**
@@ -683,7 +693,6 @@ export function FullPlayer() {
   };
 
   const close = () => router.back();
-  const toggle = (next: PlayerView) => setView(view === next ? "art" : next);
 
   // The drag down to close, shared by the areas outside the lists.
   const drag = useSharedValue(0);
@@ -692,11 +701,14 @@ export function FullPlayer() {
   }));
   const topPan = useDismissPan(drag, height, close);
   const bottomPan = useDismissPan(drag, height, close);
+  const headerPan = useDismissPan(drag, height, close);
+  const compactPan = useDismissPan(drag, height, close);
 
   // The sideways swipe that changes the song, on the artwork and the title.
   const swipeX = useSharedValue(0);
   const artSwipe = useSwipeable(swipeX, width);
   const titleSwipe = useSwipeable(swipeX, width);
+  const compactTitleSwipe = useSwipeable(swipeX, width);
 
   // The artwork's flight between the stage (0) and the compact header (1).
   const progress = useSharedValue(compact ? 1 : 0);
@@ -705,32 +717,46 @@ export function FullPlayer() {
     stage: useSharedValue<LayoutRectangle | null>(null),
     header: useSharedValue<LayoutRectangle | null>(null),
   };
-  // A flight waits for its destination slot's first layout, so both ends are
-  // known before it starts and nothing is measured mid-flight.
-  const pending = useRef<0 | 1 | null>(null);
-  const landed = (slot: 0 | 1) => {
-    if (pending.current === slot) takeOff(pending, progress);
+  const destination = useRef(compact);
+  const animateView = useCallback(
+    (next: PlayerView) => {
+      const nextCompact = next !== "art";
+      if (destination.current === nextCompact) return;
+      destination.current = nextCompact;
+      const target = nextCompact ? 1 : 0;
+      if (reduceMotion) {
+        progress.set(target);
+        fade.set(0);
+        fade.set(
+          withTiming(1, { duration: 200, reduceMotion: ReduceMotion.Never }),
+        );
+      } else {
+        progress.set(fly(target));
+      }
+    },
+    [reduceMotion, progress, fade],
+  );
+  const toggle = (next: PlayerView) => {
+    const target = view === next ? "art" : next;
+    // Schedule UI work before React reconciles the view or mounts its content.
+    animateView(target);
+    setView(target);
   };
+  // Incoming links also move the artwork; local presses already started it.
   useLayoutEffect(() => {
-    const target = compact ? 1 : 0;
-    // A toggle that lands before the other view measured cancels that flight,
-    // so its queued layout cannot start one for the view it left.
-    pending.current = null;
-    if (progress.get() === target) return;
-    if (reduceMotion) {
-      // No flight: the artwork reappears in its new place with a crossfade.
-      progress.set(target);
-      fade.set(0);
-      fade.set(
-        withTiming(1, { duration: 200, reduceMotion: ReduceMotion.Never }),
-      );
-      return;
-    }
-    pending.current = target;
-    // The slot is already laid out (no new layout event): fly anyway.
-    const timer = setTimeout(() => takeOff(pending, progress), LAYOUT_WAIT_MS);
-    return () => clearTimeout(timer);
-  }, [compact, reduceMotion, progress, fade]);
+    animateView(linkedView);
+  }, [linkedView, animateView]);
+  useEffect(() => {
+    if (view === linkedView) return;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        router.setParams({ view: view === "art" ? undefined : view });
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [view, linkedView, router]);
+  const stageStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.get() }));
+  const headerStyle = useAnimatedStyle(() => ({ opacity: progress.get() }));
 
   // The lyrics' box, and where it spans down the backdrop (0 top, 1 bottom).
   const hero = playerArtSize(width);
@@ -799,105 +825,113 @@ export function FullPlayer() {
       >
         <Backdrop fill={fill} />
         <OnWash colors={wash}>
-          <GestureDetector gesture={topPan}>
-            <View
-              className={compact ? undefined : "flex-1"}
-              style={{ paddingTop: insets.top }}
-            >
-              <Grabber onPress={close} />
-              <PlayingFrom />
-              {/* First, so a screen reader reads it before the title; it is
-                  absolutely placed over its slot, which lets touches through. */}
-              <HeroArt
-                track={track}
-                progress={progress}
-                fade={fade}
-                slots={slots}
-                compact={compact}
-                swipe={artSwipe}
-                swipeX={swipeX}
-              />
-              {compact ? (
-                <>
-                  <View
-                    className="flex-row items-center gap-3 px-6 py-2"
-                    pointerEvents="box-none"
-                    onLayout={(event) => {
-                      slots.header.set(boxOf(event));
-                      landed(1);
-                    }}
-                  >
-                    {/* The artwork flies into this slot. */}
-                    <View
-                      pointerEvents="none"
-                      style={{ width: COMPACT_ART, height: COMPACT_ART }}
-                    />
-                    <Animated.View
-                      className="flex-1"
-                      entering={contentIn(reduceMotion)}
-                      exiting={contentOut}
-                    >
-                      <TrackTitle track={track} compact swipe={titleSwipe} />
-                    </Animated.View>
-                  </View>
-                  <Animated.View
-                    entering={contentIn(reduceMotion)}
-                    exiting={contentOut}
-                  >
-                    <HeaderControls track={track} />
-                  </Animated.View>
-                </>
-              ) : (
-                <>
-                  {/* The artwork's stage: it centres there, as large as fits. */}
-                  <View
-                    className="flex-1"
-                    pointerEvents="none"
-                    onLayout={(event) => {
-                      slots.stage.set(boxOf(event));
-                      landed(0);
-                    }}
+          <View className="flex-1">
+            <GestureDetector gesture={headerPan}>
+              <View style={{ paddingTop: insets.top }}>
+                <Grabber onPress={close} />
+                <PlayingFrom />
+              </View>
+            </GestureDetector>
+            <View className="flex-1">
+              <GestureDetector gesture={topPan}>
+                <View className="flex-1" pointerEvents="box-none">
+                  <HeroArt
+                    track={track}
+                    progress={progress}
+                    fade={fade}
+                    slots={slots}
+                    compact={compact}
+                    swipe={artSwipe}
+                    swipeX={swipeX}
                   />
+                  {/* Both slots stay laid out, so a press never waits for measurement. */}
                   <Animated.View
-                    className="mt-8 px-6"
+                    style={[StyleSheet.absoluteFill, stageStyle]}
+                    pointerEvents={compact ? "none" : "box-none"}
+                    accessibilityElementsHidden={compact}
+                    importantForAccessibility={
+                      compact ? "no-hide-descendants" : "auto"
+                    }
+                  >
+                    <View
+                      className="flex-1"
+                      pointerEvents="none"
+                      onLayout={(event) => slots.stage.set(boxOf(event))}
+                    />
+                    <View className="mt-8 px-6">
+                      <TrackTitle
+                        track={track}
+                        compact={false}
+                        swipe={titleSwipe}
+                      />
+                    </View>
+                  </Animated.View>
+                </View>
+              </GestureDetector>
+              <Animated.View
+                style={[StyleSheet.absoluteFill, headerStyle]}
+                pointerEvents={compact ? "box-none" : "none"}
+                accessibilityElementsHidden={!compact}
+                importantForAccessibility={
+                  compact ? "auto" : "no-hide-descendants"
+                }
+              >
+                <GestureDetector gesture={compactPan}>
+                  <View pointerEvents="box-none">
+                    <View
+                      className="flex-row items-center gap-3 px-6 py-2"
+                      pointerEvents="box-none"
+                      onLayout={(event) => slots.header.set(boxOf(event))}
+                    >
+                      <View
+                        pointerEvents="none"
+                        style={{ width: COMPACT_ART, height: COMPACT_ART }}
+                      />
+                      <View className="flex-1">
+                        <TrackTitle
+                          track={track}
+                          compact
+                          swipe={compactTitleSwipe}
+                        />
+                      </View>
+                    </View>
+                    <HeaderControls track={track} />
+                  </View>
+                </GestureDetector>
+                {view === "queue" ? (
+                  <Animated.View
+                    key="queue"
+                    className="flex-1"
                     entering={contentIn(reduceMotion)}
                     exiting={contentOut}
                   >
-                    <TrackTitle
-                      track={track}
-                      compact={false}
-                      swipe={titleSwipe}
-                    />
+                    <DeferredContent>
+                      <QueueList />
+                    </DeferredContent>
                   </Animated.View>
-                </>
-              )}
+                ) : null}
+                {view === "lyrics" ? (
+                  <Animated.View
+                    key="lyrics"
+                    ref={slot}
+                    className="flex-1 px-6"
+                    onLayout={measureLyrics}
+                    entering={contentIn(reduceMotion)}
+                    exiting={contentOut}
+                  >
+                    <DeferredContent>
+                      <PlayerLyrics
+                        track={track}
+                        width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
+                        height={lyricsBox.height}
+                        edges={lyricEdges}
+                      />
+                    </DeferredContent>
+                  </Animated.View>
+                ) : null}
+              </Animated.View>
             </View>
-          </GestureDetector>
-          {view === "queue" ? (
-            <Animated.View
-              className="flex-1"
-              entering={contentIn(reduceMotion)}
-              exiting={contentOut}
-            >
-              <QueueList />
-            </Animated.View>
-          ) : null}
-          {view === "lyrics" ? (
-            <Animated.View
-              ref={slot}
-              className="flex-1 px-6"
-              onLayout={measureLyrics}
-              entering={contentIn(reduceMotion)}
-              exiting={contentOut}
-            >
-              <PlayerLyrics
-                track={track}
-                width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
-                height={lyricsBox.height}
-                edges={lyricEdges}
-              />
-            </Animated.View>
-          ) : null}
+          </View>
           <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom }}>
             {/* Outside the drag to close: a thumb grab that rolls down would
                 otherwise close the player and cancel the native slider. */}

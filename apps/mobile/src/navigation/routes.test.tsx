@@ -354,7 +354,7 @@ describe("the player", () => {
       "accessibilityState",
       { selected: true },
     );
-    expect(screen.getByText("Up next · 1")).toBeOnTheScreen();
+    expect(await screen.findByText("Up next · 1")).toBeOnTheScreen();
     playerStore.setState(initialPlayer, true);
   });
 
