@@ -451,6 +451,15 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   real version split matters. Its `react` 19.3.1 under `packages/core/node_modules` is core's dev copy for
   its own tests: Metro bundles only the app's 19.3.0 and Jest maps to it. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.
+- Mobile Jest defaults to two workers (including CI). `workerIdleMemoryLimit: "1GB"`
+  recycles workers between suites; it is not a hard RSS cap during a suite. The transform cache
+  stays in `apps/mobile/node_modules/.cache/jest` (worktree-local, gitignored); retain it for
+  repeat runs, and clear it only to diagnose stale transforms (`bun run test:mobile --clearCache`).
+  For a bounded source change, run `bun run test:mobile:related src/lib/haptics.ts` from the
+  repo root: forwarded paths are relative to **apps/mobile**, not the repo root. It runs
+  `jest --findRelatedTests` with the same worker/memory settings; no matching tests exits nonzero.
+  Shared setup, resolver or runner-config changes still need `bun run test:mobile`.
+  The SDK 58 Vitest spike failed the compatibility gate; see `docs/mobile-test-runner-research.md`.
 - Size and startup: `bun run mobile:bundle-report` exports a release Android bundle and lists source bytes per
   package (baseline and what was ruled out in its header: `zod/mini` keeps zod's core and locales under Metro,
   Expo's tree-shaking flag gave 5%). Release builds run R8 and resource shrinking (`expo-build-properties` in

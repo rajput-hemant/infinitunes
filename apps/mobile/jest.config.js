@@ -25,7 +25,10 @@ const reactDir = path.dirname(require.resolve("react/package.json"));
 module.exports = {
   preset: "jest-expo",
   // Several agents run this suite at once on one machine: leave cores for the desktop.
-  maxWorkers: process.env.CI ? "100%" : "25%",
+  maxWorkers: 2,
+  // Recycle retained heaps between suites; a running suite can exceed this.
+  workerIdleMemoryLimit: "1GB",
+  cacheDirectory: "<rootDir>/node_modules/.cache/jest",
   transformIgnorePatterns: transformIgnorePatterns.map((pattern) =>
     pattern.replace(
       "(.pnpm|",

@@ -30,6 +30,7 @@
     "test:dom": "bun scripts/test-isolated.ts dom coreDom",
     "test:routers": "bun scripts/test-isolated.ts routers",
     "test:mobile": "bun run --filter @infinitunes/mobile test",
+    "test:mobile:related": "bun run --filter @infinitunes/mobile test:related",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "db:up": "docker compose up -d",

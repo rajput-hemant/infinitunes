@@ -10,6 +10,7 @@
     "lint": "oxlint --deny-warnings",
     "type-check": "expo customize tsconfig.json && tsc --noEmit && tsc -p e2e --noEmit",
     "test": "jest",
+    "test:related": "jest --findRelatedTests",
     "test:e2e": "bun test ./e2e/stack.e2e.ts ./e2e/production.e2e.ts ./e2e/catalog.e2e.ts",
     "icons": "bun scripts/generate-icons.ts",
     "doctor": "bunx expo-doctor@1.21.5"
