@@ -271,7 +271,7 @@ index 0d63c9b..d4d7bfb 100644
  export declare class AudioRecorder extends SharedObject<RecordingEvents> {
      /**
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0f68a520..ce580c04 100644
+index 0f68a52..7289dc0 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -4,6 +4,7 @@ import Combine
@@ -343,10 +343,17 @@ index 0f68a520..ce580c04 100644
    func updateStatus(with dict: [String: Any]) {
      // Reading currentTime waits on the player's lock while a source swap pauses it.
      var arguments = currentStatus(knownCurrentTime: dict["currentTime"] as? Double)
-@@ -224,6 +258,13 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+@@ -224,6 +258,20 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
    }
  
    private func setupPublisher() {
++    // System play/pause does not advance the playhead, so report state changes directly.
++    ref.publisher(for: \.timeControlStatus, options: [.new])
++      .sink { [weak self] _ in
++        self?.updateStatus(with: [:])
++      }
++      .store(in: &cancellables)
++
 +    // The playhead observer does not tick while paused or waiting for data.
 +    ref.publisher(for: \.currentItem?.loadedTimeRanges)
 +      .sink { [weak self] _ in
@@ -357,7 +364,7 @@ index 0f68a520..ce580c04 100644
      ref.publisher(for: \.currentItem?.status)
        .sink { [weak self] status in
          guard let self, let status else {
-@@ -432,6 +473,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+@@ -432,6 +480,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
    }
  
    private func replacePlayerItem(with item: AVPlayerItem?) {
