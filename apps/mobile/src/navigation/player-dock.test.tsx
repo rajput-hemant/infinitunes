@@ -11,16 +11,23 @@ const metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-// `playerDockInset` is decided at load: re-evaluate it per case.
-const inset = (hasTabBarAccessory: boolean) => {
-  let value = -1;
+type PlayerDock = typeof import("./player-dock");
+
+// The dock's geometry is decided at load: re-evaluate it per case.
+const load = (hasTabBarAccessory: boolean, os: "ios" | "android" = "ios") => {
+  let dock: PlayerDock | undefined;
   jest.isolateModules(() => {
     jest.doMock("~/lib/platform", () => ({ hasTabBarAccessory }));
-    value = (require("./player-dock") as typeof import("./player-dock"))
-      .playerDockInset;
+    jest.doMock("react-native-safe-area-context", () => ({
+      useSafeAreaInsets: () => metrics.insets,
+    }));
+    (require("react-native") as typeof import("react-native")).Platform.OS = os;
+    dock = require("./player-dock") as PlayerDock;
   });
-  return value;
+  return dock!;
 };
+const inset = (hasTabBarAccessory: boolean) =>
+  load(hasTabBarAccessory).playerDockInset;
 
 describe("player dock", () => {
   afterEach(() => jest.restoreAllMocks());
@@ -37,6 +44,14 @@ describe("player dock", () => {
     });
     const tabBar = Platform.select({ ios: 49, default: 80 });
     expect(result.current).toBe(34 + tabBar + space.sm);
+  });
+
+  it("fuses Android's strip to the navigation bar, edge to edge", () => {
+    const android = load(false, "android");
+    expect(android.FLOATING_DOCK_INSET).toBe(0);
+    expect(android.playerDockInset).toBe(sizes.dock);
+    // The isolated hook reads only the (mocked) insets, so it runs as a plain call.
+    expect(android.useFloatingDockOffset()).toBe(34 + 80);
   });
 
   it("pads tab content by the dock only when there is no tab bar accessory", () => {

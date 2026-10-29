@@ -271,6 +271,8 @@ export const ACCENT_TOKENS = ["primary", "primary-foreground"] as const;
 export const art = {
   row: 48,
   mini: 36,
+  /** The art on Android's dock strip (iOS's floating dock keeps `mini`). */
+  dock: 48,
   pick: 48,
   tile: 56,
   avatar: 48,
@@ -299,6 +301,7 @@ export const artRadii: Record<"ios" | "android", Record<ArtSize, Radius>> = {
   ios: {
     row: "sm",
     mini: "sm",
+    dock: "sm",
     pick: "sm",
     tile: "sm",
     avatar: "full",
@@ -311,6 +314,7 @@ export const artRadii: Record<"ios" | "android", Record<ArtSize, Radius>> = {
   android: {
     row: "sm",
     mini: "sm",
+    dock: "sm",
     pick: "sm",
     tile: "sm",
     avatar: "full",

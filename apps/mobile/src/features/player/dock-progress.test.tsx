@@ -25,3 +25,9 @@ it("draws the buffered dock segment under the played segment", async () => {
     transform: [{ scaleX: 0.15 }],
   });
 });
+
+it("lays the line along the top edge when asked (Android's strip)", async () => {
+  await renderScreen(<DockProgress color={colors.light.primary} edge="top" />);
+
+  expect(segment("dock-line")).toHaveStyle({ top: 0 });
+});
