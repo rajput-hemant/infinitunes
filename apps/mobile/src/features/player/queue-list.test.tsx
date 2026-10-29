@@ -1,7 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { Platform } from "react-native";
+import { Dimensions, Platform } from "react-native";
 
 import { nowPlayingWash, OnWash } from "~/components/wash";
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
@@ -61,17 +61,36 @@ describe("QueueList", () => {
     expect(ids()).toEqual(["a", "b", "c"]);
   });
 
-  it("gives every iOS row the list's full width, so the menu host cannot hug its text", async () => {
+  it("gives every iOS menu host and row its final width before any layout event", async () => {
     await renderScreen(<QueueList />);
     await screen.findByRole("button", { name: "Delta" });
 
-    await fireEvent(screen.getAllByTestId("queue-row-frame")[0]!, "layout", {
-      nativeEvent: { layout: { x: 0, y: 0, width: 342, height: 56 } },
-    });
+    for (const id of ["c", "d"]) {
+      expect(screen.getByTestId(`queue-row-menu-${id}`)).toHaveStyle({
+        width: 390,
+      });
+    }
+    for (const body of screen.getAllByTestId("queue-row-body")) {
+      expect(body).toHaveStyle({ width: 390 });
+    }
+  });
 
-    expect(screen.getAllByTestId("queue-row-body")[0]).toHaveStyle({
-      width: 342,
-    });
+  it("resizes all iOS row hosts with the player window without measuring each row", async () => {
+    const phone = Dimensions.get("window");
+    await renderScreen(<QueueList />);
+    try {
+      await act(async () => {
+        Dimensions.set({ window: { ...phone, width: 768 } });
+      });
+      expect(screen.getByTestId("queue-row-menu-d")).toHaveStyle({
+        width: 768,
+      });
+      expect(screen.getAllByTestId("queue-row-body")[1]).toHaveStyle({
+        width: 768,
+      });
+    } finally {
+      await act(async () => Dimensions.set({ window: phone }));
+    }
   });
 
   it("opens the dropdown on a long press on Android, mounting it then", async () => {

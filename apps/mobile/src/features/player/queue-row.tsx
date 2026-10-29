@@ -7,7 +7,6 @@ import {
   menuAccessibilityActions,
 } from "~/components/context-menu";
 import { ListRow } from "~/components/list-row";
-import { MeasuredBox } from "~/components/measured-box";
 import { NativeMenu } from "~/components/native-menu";
 import { useSongMenuEntries } from "~/components/song-menu";
 
@@ -18,6 +17,7 @@ type QueueTrack = Queue & RowExtras;
 
 type QueueRowProps = {
   song: QueueTrack;
+  width: number;
   onPress: () => void;
   onRemove: () => void;
   /** The row's end: the caller's drag handle, inside the row's pressed highlight. */
@@ -36,7 +36,13 @@ type QueueRowProps = {
  * showed. Android's dropdown mounts on the first long press. The entries are
  * also the row's screen reader actions.
  */
-export function QueueRow({ song, onPress, onRemove, children }: QueueRowProps) {
+export function QueueRow({
+  song,
+  width,
+  onPress,
+  onRemove,
+  children,
+}: QueueRowProps) {
   const entries = useSongMenuEntries({
     song,
     inQueue: true,
@@ -65,23 +71,18 @@ export function QueueRow({ song, onPress, onRemove, children }: QueueRowProps) {
 
   const menu =
     Platform.OS === "ios" ? (
-      // The menu host hugs its child: give the row the list's full width, so
-      // every handle sits at the right edge and long titles truncate before it.
-      <MeasuredBox testID="queue-row-frame">
-        {(box) => (
-          <NativeMenu
-            title={song.name}
-            entries={entries}
-            openOnLongPress
-            testID={`queue-row-menu-${song.id}`}
-            style={box && { width: box.width }}
-          >
-            <View testID="queue-row-body" style={box && { width: box.width }}>
-              {row()}
-            </View>
-          </NativeMenu>
-        )}
-      </MeasuredBox>
+      // MenuView hugs its child; a measured width would show an intrinsic-width first frame.
+      <NativeMenu
+        title={song.name}
+        entries={entries}
+        openOnLongPress
+        testID={`queue-row-menu-${song.id}`}
+        style={{ width }}
+      >
+        <View testID="queue-row-body" style={{ width }}>
+          {row()}
+        </View>
+      </NativeMenu>
     ) : (
       <LongPressMenu
         testID="queue-row-menu"
