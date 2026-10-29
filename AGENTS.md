@@ -439,6 +439,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   real version split matters. Its `react` 19.3.1 under `packages/core/node_modules` is core's dev copy for
   its own tests: Metro bundles only the app's 19.3.0 and Jest maps to it. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.
+- Size and startup: `bun run mobile:bundle-report` exports a release Android bundle and lists source bytes per
+  package (baseline and what was ruled out in its header: `zod/mini` keeps zod's core and locales under Metro,
+  Expo's tree-shaking flag gave 5%). Release builds run R8 and resource shrinking (`expo-build-properties` in
+  `app.config.ts`): a release-only crash is a missing keep rule, most likely in a module built from source
+  (`expo-audio`). Babel `lazyImports` stays off until a device launch can check it. Home seeds its query from
+  the last launch data (`features/home/home-snapshot.ts`, one kv-store entry for the current languages).
 - Hermes on the app's builds lacks `toSorted`/`toReversed`/`toSpliced` (Jest on Node has them, so tests pass while the device throws "undefined is not a function"): copy and sort/reverse instead; `src/test/hermes-builtins.test.ts` scans the app, core and types sources.
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).

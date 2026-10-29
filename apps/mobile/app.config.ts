@@ -113,6 +113,18 @@ const config: ExpoConfig = {
       },
     ],
     ["expo-quick-actions", { iosActions: buildIosQuickActions() }],
+    // Release APKs and bundles run R8 and drop unused resources (smaller
+    // install). Libraries ship their own keep rules; a crash on a release
+    // build that debug does not show is a missing rule (see AGENTS.md).
+    [
+      "expo-build-properties",
+      {
+        android: {
+          enableMinifyInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+        },
+      },
+    ],
     "./plugins/android-app-actions/index.ts",
     "./plugins/android-kotlin-target/index.ts",
     "./plugins/dev-menu-no-fab.ts",
