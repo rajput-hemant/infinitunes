@@ -149,7 +149,7 @@ const TITLE_VARIANT = Platform.select<TextVariant>({
 function settle(target: number) {
   return Platform.OS === "android"
     ? withSpring(target, springs.spatialSlow)
-    : withTiming(target, { duration: 340 });
+    : withTiming(target, { duration: 220 });
 }
 
 /** The artwork's flight between the stage and the compact header. */
@@ -231,7 +231,11 @@ function NowPlayingArt({ image }: { image: string }) {
  * reduce motion keeps it at full size, as does the compact header.
  */
 function usePausedScale(compact: boolean) {
-  const playing = usePlaybackStatus((state) => state.playing);
+  const playing = usePlaybackStatus((state) =>
+    Platform.OS === "ios"
+      ? (state.playingIntent ?? state.playing)
+      : state.playing,
+  );
   const reduceMotion = useReducedMotion();
   const target = playing || reduceMotion || compact ? 1 : PAUSED_SCALE;
   // Opened while paused, the art starts settled instead of shrinking in.

@@ -8,11 +8,12 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useSyncExternalStore,
 } from "react";
 import type { ScrollViewInstance } from "react-native";
-import { Pressable, ScrollView, View } from "react-native";
+import { Platform, Pressable, ScrollView, View } from "react-native";
 import Animated, { useReducedMotion } from "react-native-reanimated";
 
 import { Text } from "~/components/ui/text";
@@ -36,6 +37,9 @@ type Props = {
 
 /** A prominent inactive line's opacity: the foreground, dimmed. */
 const INACTIVE_OPACITY = 0.55;
+
+// iOS sends the scroll command with the highlight commit, before the next paint.
+const useFollowEffect = Platform.OS === "ios" ? useLayoutEffect : useEffect;
 
 /**
  * A prominent line's dim fades. Only the opacity changes, so it stays under
@@ -145,7 +149,7 @@ const TimedLines = memo(function TimedLines({
       follow();
     }, LYRICS_FOLLOW_DELAY_MS);
   }
-  useEffect(() => {
+  useFollowEffect(() => {
     activeRef.current = active;
     follow();
   }, [active, follow]);

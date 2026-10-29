@@ -49,7 +49,11 @@ function tapped(action: () => void) {
 const tappedPlayPause = tapped(togglePlayback);
 
 function usePlayPause() {
-  const playing = usePlaybackStatus((state) => state.playing);
+  const playing = usePlaybackStatus((state) =>
+    Platform.OS === "ios"
+      ? (state.playingIntent ?? state.playing)
+      : state.playing,
+  );
   return {
     icon: playing
       ? ({ ios: "pause.fill", android: "pause" } as const)

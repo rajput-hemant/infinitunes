@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { usePanGesture } from "react-native-gesture-handler";
 import {
   ReduceMotion,
@@ -148,6 +149,10 @@ export function useDismissPan(
         !event.canceled &&
         shouldDismiss(event.translationY, event.velocityY, height)
       ) {
+        if (Platform.OS === "ios") {
+          // Keep moving on the UI thread while the navigator handles the pop.
+          offset.set(withTiming(height, { duration: 180 }));
+        }
         scheduleOnRN(onDismiss);
         return;
       }

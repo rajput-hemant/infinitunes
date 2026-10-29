@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import {
   audioPlayer,
   hasLiveSource,
@@ -5,7 +7,11 @@ import {
   markSourceEnded,
 } from "./audio-engine";
 import { beginPlaybackRequest } from "./playback-request";
-import { playbackPosition } from "./playback-status";
+import {
+  playbackPosition,
+  playbackStatusStore,
+  requestPlaying,
+} from "./playback-status";
 import { playerStore } from "./player-store";
 
 /**
@@ -14,25 +20,44 @@ import { playerStore } from "./player-store";
  * its end restarts.
  */
 export function togglePlayback() {
-  const { started, start } = playerStore.getState();
-  if (!started) {
-    start();
-    return;
+  const { started, start, queue } = playerStore.getState();
+  const playing =
+    Platform.OS === "ios"
+      ? (playbackStatusStore.getState().playingIntent ??
+        audioPlayer.currentStatus.playing)
+      : audioPlayer.currentStatus.playing;
+  if (Platform.OS === "ios" && queue.length > 0)
+    requestPlaying(!started || !playing);
+  try {
+    if (!started) {
+      start();
+      return;
+    }
+    // The status, not `playing`: Android's reports false while the engine buffers
+    // a track the UI shows as playing, and that press must still pause.
+    if (playing) {
+      beginPlaybackRequest();
+      audioPlayer.pause();
+      return;
+    }
+    resumePlayback();
+  } catch (error) {
+    if (Platform.OS === "ios") requestPlaying(null);
+    throw error;
   }
-  // The status, not `playing`: Android's reports false while the engine buffers
-  // a track the UI shows as playing, and that press must still pause.
-  if (audioPlayer.currentStatus.playing) {
-    beginPlaybackRequest();
-    audioPlayer.pause();
-    return;
-  }
-  resumePlayback();
 }
 
 /** Plays the loaded source on; one that played to its end starts over. */
 export function resumePlayback() {
   beginPlaybackRequest();
-  if (audioPlayer.playing) return;
+  if (
+    audioPlayer.playing &&
+    !(
+      Platform.OS === "ios" &&
+      playbackStatusStore.getState().playingIntent === true
+    )
+  )
+    return;
   const { started, queue } = playerStore.getState();
   if (started && queue.length > 0 && !hasLiveSource()) {
     // Nothing loaded (a problem cleared it): ask the controller to load the entry again.

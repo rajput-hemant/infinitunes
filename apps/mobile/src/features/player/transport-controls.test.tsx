@@ -11,7 +11,10 @@ import {
   playerColorsFromSeed,
 } from "~/lib/artwork-colors";
 import { audioPlayer, replaceSource } from "~/playback/audio-engine";
-import { playbackStatusStore } from "~/playback/playback-status";
+import {
+  playbackStatusStore,
+  requestPlaying,
+} from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 
@@ -24,12 +27,15 @@ const initialPlayer = playerStore.getState();
 const initialStatus = playbackStatusStore.getState();
 
 beforeEach(() => {
+  requestPlaying(null);
   playerStore.setState(initialPlayer, true);
   playbackStatusStore.setState(initialStatus, true);
   audioPlayer.pause();
   replaceSource("https://example.test/a.mp4");
   playerStore.getState().playTracks(rows, { startIndex: 1 });
 });
+
+afterEach(() => requestPlaying(null));
 
 const press = (name: string) =>
   fireEvent.press(screen.getByRole("button", { name }));
@@ -42,6 +48,28 @@ describe("PlayPauseButton", () => {
     await press("Play");
 
     expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it("flips both iOS play controls before native status and accepts a second press", async () => {
+    const play = jest.spyOn(audioPlayer, "play").mockImplementation(() => {});
+    const pause = jest.spyOn(audioPlayer, "pause").mockImplementation(() => {});
+    await renderScreen(
+      <>
+        <PlayPauseButton />
+        <TransportControls />
+      </>,
+    );
+
+    await fireEvent.press(screen.getAllByRole("button", { name: "Play" })[0]);
+    expect(screen.getAllByRole("button", { name: "Pause" })).toHaveLength(2);
+    expect(playbackStatusStore.getState().playing).toBe(false);
+
+    await fireEvent.press(screen.getAllByRole("button", { name: "Pause" })[1]);
+    expect(screen.getAllByRole("button", { name: "Play" })).toHaveLength(2);
+    expect(play).toHaveBeenCalledTimes(1);
+    expect(pause).toHaveBeenCalledTimes(1);
+    play.mockRestore();
+    pause.mockRestore();
   });
 
   it("offers Pause while playing, and follows the engine", async () => {

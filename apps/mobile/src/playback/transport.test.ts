@@ -4,7 +4,7 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { lastPlayer } from "~/test/expo-audio";
 
 import { audioPlayer, markSourceEnded, replaceSource } from "./audio-engine";
-import { playbackPosition } from "./playback-status";
+import { playbackPosition, requestPlaying } from "./playback-status";
 import { playerStore } from "./player-store";
 import { resumePlayback, seekTo, togglePlayback } from "./transport";
 
@@ -16,12 +16,15 @@ const seek = jest.spyOn(audioPlayer, "seekTo");
 const initial = playerStore.getState();
 
 beforeEach(() => {
+  requestPlaying(null);
   playerStore.setState(initial, true);
   audioPlayer.pause();
   void audioPlayer.seekTo(0);
   markSourceEnded(false);
   jest.clearAllMocks();
 });
+
+afterEach(() => requestPlaying(null));
 
 /** A restored queue the listener has not started this run. */
 function restoreQueue() {
