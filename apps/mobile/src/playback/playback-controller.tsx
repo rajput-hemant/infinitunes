@@ -35,6 +35,7 @@ import { capturePlaybackRequest } from "./playback-request";
 import {
   playbackPosition,
   playbackStatusStore,
+  requestPlaying,
   usePlaybackStatus,
 } from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
@@ -147,6 +148,12 @@ export function PlaybackController() {
   const load = useCallback<LoadTrack>((src, options) => {
     awaitingRefill.current = null;
     const current = selectCurrentTrack(playerStore.getState());
+    // A transport press belongs to its entry, not the next song.
+    if (
+      loadedEntry.current !== undefined &&
+      loadedEntry.current !== current?.queueItemId
+    )
+      requestPlaying(null);
     loadedEntry.current = current?.queueItemId;
     const local = current ? cachedSongSource(current, src) : undefined;
     cachedLoad.current =

@@ -54,11 +54,12 @@ export function resumePlayback() {
     audioPlayer.playing &&
     !(
       Platform.OS === "ios" &&
-      playbackStatusStore.getState().playingIntent === true
+      playbackStatusStore.getState().playingIntent !== null
     )
   )
     return;
   const { started, queue } = playerStore.getState();
+  if (Platform.OS === "ios" && queue.length > 0) requestPlaying(true);
   if (started && queue.length > 0 && !hasLiveSource()) {
     // Nothing loaded (a problem cleared it): ask the controller to load the entry again.
     playerStore.setState((state) => ({ retryRequest: state.retryRequest + 1 }));

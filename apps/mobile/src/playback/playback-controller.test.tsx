@@ -21,7 +21,7 @@ import { procedure } from "~/test/trpc-mock";
 
 import { playEntity } from "./play-entity";
 import { PlaybackController } from "./playback-controller";
-import { playbackStatusStore } from "./playback-status";
+import { playbackStatusStore, requestPlaying } from "./playback-status";
 import { playerStore } from "./player-store";
 import { seekTo, togglePlayback } from "./transport";
 
@@ -53,9 +53,31 @@ beforeEach(() => {
   lastPlayer().reset();
 });
 
-afterEach(() => queryClient.clear());
+afterEach(() => {
+  queryClient.clear();
+  requestPlaying(null);
+});
 
 describe("PlaybackController", () => {
+  it("drops a pending pause when another queue entry starts playing", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    const pause = jest.spyOn(player, "pause").mockImplementation(() => {});
+    try {
+      await act(async () => togglePlayback());
+      expect(playbackStatusStore.getState().playingIntent).toBe(false);
+
+      await act(async () => playerStore.getState().skipToNext());
+      expect(player.playing).toBe(true);
+      expect(playbackStatusStore.getState().playingIntent).toBeNull();
+      pause.mockClear();
+      await act(async () => togglePlayback());
+      expect(pause).toHaveBeenCalledTimes(1);
+    } finally {
+      pause.mockRestore();
+    }
+  });
+
   it("publishes buffering progress without committing the controller on status ticks", async () => {
     const onRender = jest.fn();
     await render(
