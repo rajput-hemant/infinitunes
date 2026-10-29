@@ -772,7 +772,10 @@ export function FullPlayer() {
     );
     return () => clearTimeout(timer);
   }, [view, linkedView, router, reduceMotion]);
-  const stageStyle = useAnimatedStyle(() => ({ opacity: 1 - progress.get() }));
+  // The title, like and more leave in the flight's first moments, so they never trail the art.
+  const stageStyle = useAnimatedStyle(() => ({
+    opacity: Math.max(0, 1 - progress.get() * 5),
+  }));
   const headerStyle = useAnimatedStyle(() => ({ opacity: progress.get() }));
   const queueStyle = useAnimatedStyle(() => ({
     opacity: queueProgress.get(),
