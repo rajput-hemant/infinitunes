@@ -3,6 +3,7 @@ import { Stack, useIsFocused } from "expo-router";
 
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
+import { PageTitle } from "~/components/page-title";
 import { Text } from "~/components/ui/text";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
@@ -39,9 +40,12 @@ export function FeaturedStationsScreen() {
           message: "Try again later.",
         }}
         header={
-          <Text variant="subhead" tone="muted" className="px-page py-2">
-            Endless stations for every mood.
-          </Text>
+          <>
+            <PageTitle title="Radio" />
+            <Text variant="subhead" tone="muted" className="px-page py-2">
+              Endless stations for every mood.
+            </Text>
+          </>
         }
       />
     </>

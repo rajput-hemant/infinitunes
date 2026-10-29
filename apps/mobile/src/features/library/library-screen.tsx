@@ -7,6 +7,7 @@ import Animated from "react-native-reanimated";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ListRow } from "~/components/list-row";
+import { PageTitle } from "~/components/page-title";
 import { SectionHeader } from "~/components/section-header";
 import { CONTENT_REVEAL, SongListSkeleton } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
@@ -71,6 +72,7 @@ function Library() {
       {...scrolledBar}
       ListHeaderComponent={
         <>
+          <PageTitle title="Library" />
           <Tiles />
           {LIBRARY_SHORTCUTS.map(({ title, icon, href }) => (
             <ListRow
