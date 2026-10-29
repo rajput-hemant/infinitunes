@@ -75,9 +75,9 @@ export function MiniProgress({ position, duration }: MiniProgressProps) {
       className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden rounded-full bg-fill-2 md:hidden"
     >
       <div
-        className="h-full bg-foreground"
+        className="h-full origin-left bg-foreground"
         style={{
-          width: `${duration > 0 ? Math.min(100, (progress / duration) * 100) : 0}%`,
+          transform: `scaleX(${duration > 0 ? Math.min(1, Math.max(0, progress / duration)) : 0})`,
         }}
       />
     </div>
