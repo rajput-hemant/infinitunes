@@ -2,7 +2,7 @@ import { rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
 
-import { renderScreen } from "~/test/render";
+import { renderScreen, renderWithProviders } from "~/test/render";
 import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 import { space } from "~/theme/tokens";
@@ -169,9 +169,13 @@ describe("ListRow", () => {
         />
       </>,
     );
-    const [plain, current] = screen
-      .getAllByTestId("list-row-container")
-      .map((fill) => StyleSheet.flatten(fill.parent?.props.style));
+    expect(screen.getAllByTestId("list-row-container")).toHaveLength(1);
+    const plain = StyleSheet.flatten(
+      screen.getByRole("button", { name: "Plain" }).parent?.props.style,
+    );
+    const current = StyleSheet.flatten(
+      screen.getByTestId("list-row-container").parent?.props.style,
+    );
 
     // Distance of the controls from the edge: margin plus padding.
     const gap = (style: typeof plain) =>
@@ -234,4 +238,18 @@ describe("ListRow", () => {
     expect(className).toContain("min-h-row");
     expect(className).not.toMatch(/(^| )h-/);
   });
+});
+
+it("allocates the Android tonal layer only after selection and retains the exit animation", async () => {
+  jest.replaceProperty(Platform, "OS", "android");
+  const press = jest.fn();
+  const app = await renderWithProviders(
+    <ListRow title="Song" onPress={press} />,
+  );
+  expect(screen.queryByTestId("list-row-container")).toBeNull();
+  await app.rerender(<ListRow title="Song" onPress={press} selected />);
+  expect(screen.getByTestId("list-row-container")).toBeOnTheScreen();
+  await app.rerender(<ListRow title="Song" onPress={press} />);
+  expect(screen.getByTestId("list-row-container")).toBeOnTheScreen();
+  expect(screen.getByRole("button", { name: "Song" })).not.toBeSelected();
 });

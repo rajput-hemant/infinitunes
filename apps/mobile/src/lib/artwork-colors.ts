@@ -160,7 +160,26 @@ function checked(colors: PlayerColors): PlayerColors | null {
  *   surface, primary for accents and the play shape), the dock on surface
  *   container high.
  */
+// Dock, details and Now Playing share palettes; reopening must not rebuild SchemeContent.
+const palettes = new Map<string, PlayerColors | null>();
+
 export function playerColorsFromSeed(
+  seed: string,
+  scheme: ColorScheme,
+  platform: WashPlatform,
+): PlayerColors | null {
+  const key = `${seed}:${scheme}:${platform}`;
+  if (palettes.has(key)) return palettes.get(key) ?? null;
+  const colors = derivePlayerColors(seed, scheme, platform);
+  if (palettes.size >= 64) {
+    const oldest = palettes.keys().next();
+    if (!oldest.done) palettes.delete(oldest.value);
+  }
+  palettes.set(key, colors);
+  return colors;
+}
+
+function derivePlayerColors(
   seed: string,
   scheme: ColorScheme,
   platform: WashPlatform,

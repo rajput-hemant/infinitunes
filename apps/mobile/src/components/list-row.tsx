@@ -358,6 +358,37 @@ function TonalRow({
   endInset: number;
   children: ReactNode;
 }) {
+  // Idle rows need no worklets or animated background until first selected.
+  const [activated, setActivated] = useState(current);
+  if (current && !activated) setActivated(true);
+  if (!current && !activated) {
+    return (
+      <View
+        className="flex-row items-center overflow-hidden"
+        style={{ paddingStart: space.sm, paddingEnd: endPad }}
+      >
+        {children}
+      </View>
+    );
+  }
+  return (
+    <AnimatedTonalRow current={current} endPad={endPad} endInset={endInset}>
+      {children}
+    </AnimatedTonalRow>
+  );
+}
+
+function AnimatedTonalRow({
+  current,
+  endPad,
+  endInset,
+  children,
+}: {
+  current: boolean;
+  endPad: number;
+  endInset: number;
+  children: ReactNode;
+}) {
   const tonal = useTonalContainer(current, endPad, endInset);
   return (
     <Animated.View
