@@ -19,7 +19,6 @@ const store = createStore();
 // subscribe, so every consumer gets it, and it hydrates from the server value.
 function useAtom<Value, Args extends unknown[], Result>(
   target: WritableAtom<Value, Args, Result>,
-  _options: { store: typeof store },
   serverValue: Value,
 ) {
   // A stable `subscribe`: a new identity would unsubscribe and resubscribe on
@@ -56,13 +55,17 @@ const EMPTY_QUEUE: Queue[] = [];
 const queueAtom = atomWithStorage<Queue[]>("queue", EMPTY_QUEUE, queueStorage);
 
 export function useQueue() {
-  return useAtom(queueAtom, { store }, EMPTY_QUEUE);
+  return useAtom(queueAtom, EMPTY_QUEUE);
 }
 
 const currentSongIndexAtom = atomWithStorage("current_song_index", 0);
 
+export function useSetCurrentSongIndex() {
+  return useSetAtom(currentSongIndexAtom, { store });
+}
+
 export function useCurrentSongIndex() {
-  return useAtom(currentSongIndexAtom, { store }, 0);
+  return useAtom(currentSongIndexAtom, 0);
 }
 
 const streamQualityAtom = atomWithStorage<StreamQuality>(
@@ -71,7 +74,7 @@ const streamQualityAtom = atomWithStorage<StreamQuality>(
 );
 
 export function useStreamQuality() {
-  return useAtom(streamQualityAtom, { store }, "excellent");
+  return useAtom(streamQualityAtom, "excellent");
 }
 
 const downloadQualityAtom = atomWithStorage<StreamQuality>(
@@ -80,25 +83,29 @@ const downloadQualityAtom = atomWithStorage<StreamQuality>(
 );
 
 export function useDownloadQuality() {
-  return useAtom(downloadQualityAtom, { store }, "excellent");
+  return useAtom(downloadQualityAtom, "excellent");
 }
 
 const imageQualityAtom = atomWithStorage<ImageQuality>("image_quality", "high");
 
 export function useImageQuality() {
-  return useAtom(imageQualityAtom, { store }, "high");
+  return useAtom(imageQualityAtom, "high");
 }
 
 const isPlayerInitAtom = atom(false);
 
+export function useSetIsPlayerInit() {
+  return useSetAtom(isPlayerInitAtom, { store });
+}
+
 export function useIsPlayerInit() {
-  return useAtom(isPlayerInitAtom, { store }, false);
+  return useAtom(isPlayerInitAtom, false);
 }
 
 const isTyping = atom(false);
 
 export function useIsTyping() {
-  return useAtom(isTyping, { store }, false);
+  return useAtom(isTyping, false);
 }
 
 const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
@@ -106,13 +113,17 @@ const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
   null,
 );
 
+export function useSetActiveRadioSession() {
+  return useSetAtom(activeRadioSessionAtom, { store });
+}
+
 export function useActiveRadioSession() {
-  return useAtom(activeRadioSessionAtom, { store }, null);
+  return useAtom(activeRadioSessionAtom, null);
 }
 
 const keyboardShortcutsAtom = atomWithStorage("keyboard_shortcuts", true);
 
 /** WCAG 2.1.4: single-key player shortcuts can be turned off. Default on. */
 export function useKeyboardShortcuts() {
-  return useAtom(keyboardShortcutsAtom, { store }, true);
+  return useAtom(keyboardShortcutsAtom, true);
 }

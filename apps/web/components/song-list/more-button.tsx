@@ -26,9 +26,9 @@ import { toast } from "sonner";
 import { useDownloadSongs } from "~/components/download-button";
 import { getItemName } from "~/components/song-list/item-name";
 import {
-  useActiveRadioSession,
-  useCurrentSongIndex,
-  useIsPlayerInit,
+  useSetActiveRadioSession,
+  useSetCurrentSongIndex,
+  useSetIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
@@ -91,10 +91,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [dialogUsed, setDialogUsed] = React.useState(false);
 
-  const [, setIsPlayerInit] = useIsPlayerInit();
+  const setIsPlayerInit = useSetIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
-  const [, setCurrentIndex] = useCurrentSongIndex();
-  const [, setActiveRadio] = useActiveRadioSession();
+  const setCurrentIndex = useSetCurrentSongIndex();
+  const setActiveRadio = useSetActiveRadioSession();
 
   const { isFavorite, like } = useTileFavorite({ item, user, favorites });
   const playRadio = useTileRadio(item);
