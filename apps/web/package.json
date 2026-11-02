@@ -15,7 +15,7 @@
     "with-env": "bun --env-file=../../.env --env-file=../../.env.local"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.9.2",
+    "@hookform/resolvers": "^7.0.1",
     "@infinitunes/auth": "workspace:*",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
