@@ -41,7 +41,7 @@
     "@happy-dom/global-registrator": "^21.0.4",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
-    "knip": "^6.43.0",
+    "knip": "^6.44.2",
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
