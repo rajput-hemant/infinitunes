@@ -27,7 +27,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7.4-alpine
+    image: redis:8.10-alpine
     container_name: local-platforms-redis
     restart: unless-stopped
     ports:
