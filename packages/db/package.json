@@ -20,7 +20,7 @@
     "@infinitunes/env": "workspace:*",
     "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",
-    "postgres": "^4.1.0",
+    "postgres": "^4.1.1",
     "@t3-oss/env-core": "^0.13.11",
     "zod": "catalog:"
   },
