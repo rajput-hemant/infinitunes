@@ -41,11 +41,11 @@
     "@happy-dom/global-registrator": "^21.0.4",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
-    "knip": "^6.43.0",
+    "knip": "^6.45.1",
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "turbo": "^2.11.10"
+    "turbo": "^2.11.11"
   },
   "workspaces": {
     "packages": [
